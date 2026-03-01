@@ -21,10 +21,8 @@
   {
     "id": "VR-003",
     "model": "Meta Quest 3",
-    "status": "Not Available",
-    "last_event": "STR (2026-03-13 to 2026-03-15)",
-    "borrower_name": "MERIL Dev",
-    "borrower_email": "dev.desai@merai.co",
+    "status": "Available",
+    "last_event": "Available",
     "event_name": "STR",
     "start_date": "2026-03-13",
     "end_date": "2026-03-15"
