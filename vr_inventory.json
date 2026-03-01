@@ -1,8 +1,50 @@
 [
-  {"id": "VR-001", "model": "Meta Quest 3", "status": "Available", "last_event": "None", "borrower_name": "", "borrower_email": ""},
-  {"id": "VR-002", "model": "Meta Quest 3", "status": "Available", "last_event": "None", "borrower_name": "", "borrower_email": ""},
-  {"id": "VR-003", "model": "Meta Quest 3", "status": "Available", "last_event": "None", "borrower_name": "", "borrower_email": ""},
-  {"id": "VR-004", "model": "Meta Quest 3", "status": "Available", "last_event": "None", "borrower_name": "", "borrower_email": ""},
-  {"id": "VR-005", "model": "Meta Quest 3", "status": "Available", "last_event": "None", "borrower_name": "", "borrower_email": ""},
-  {"id": "VR-006", "model": "Apple Vision Pro", "status": "Available", "last_event": "None", "borrower_name": "", "borrower_email": ""}
+  {
+    "id": "VR-001",
+    "model": "Meta Quest 3",
+    "status": "",
+    "last_event": "SSS",
+    "borrower_name": "",
+    "borrower_email": ""
+  },
+  {
+    "id": "VR-002",
+    "model": "Meta Quest 3",
+    "status": "Available",
+    "last_event": "None",
+    "borrower_name": "",
+    "borrower_email": ""
+  },
+  {
+    "id": "VR-003",
+    "model": "Meta Quest 3",
+    "status": "Available",
+    "last_event": "None",
+    "borrower_name": "",
+    "borrower_email": ""
+  },
+  {
+    "id": "VR-004",
+    "model": "Meta Quest 3",
+    "status": "Available",
+    "last_event": "None",
+    "borrower_name": "",
+    "borrower_email": ""
+  },
+  {
+    "id": "VR-005",
+    "model": "Meta Quest 3",
+    "status": "Available",
+    "last_event": "None",
+    "borrower_name": "",
+    "borrower_email": ""
+  },
+  {
+    "id": "VR-006",
+    "model": "Apple Vision Pro",
+    "status": "Available",
+    "last_event": "None",
+    "borrower_name": "",
+    "borrower_email": ""
+  }
 ]
