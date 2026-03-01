@@ -18,8 +18,8 @@
   {
     "id": "VR-003",
     "model": "Meta Quest 3",
-    "status": "Available",
-    "last_event": "None",
+    "status": "",
+    "last_event": "GGGG",
     "borrower_name": "",
     "borrower_email": ""
   },
