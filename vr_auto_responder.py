@@ -107,7 +107,7 @@ def process_emails():
                 reply = MIMEText(REPLY_BODY)
                 reply['Subject'] = f"Re: {msg['Subject']}"
                 reply['To'] = sender
-                reply['Cc'] = "devdesai242003@gmail.com"
+                reply['Cc'] = "desaidev242003@gmail.com"
                 server.sendmail(GMAIL_USER, [sender, "devdesai242003@gmail.com"], reply.as_string())
                 print(f"Invite sent to {sender}")
             server.quit()
