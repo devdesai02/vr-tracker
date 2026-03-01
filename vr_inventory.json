@@ -32,7 +32,7 @@
   {
     "id": "VR-006",
     "model": "Apple Vision Pro",
-    "status": "Available",
-    "last_event": "None"
+    "status": "",
+    "last_event": "ggg"
   }
 ]
