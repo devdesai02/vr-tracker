@@ -68,7 +68,6 @@
                 const card = document.createElement('div');
                 card.className = 'card';
                 
-                // FIX: Case-insensitive and trimmed status check
                 const statusStr = (item.status || "").trim().toLowerCase();
                 const isAvail = statusStr === 'available';
                 
@@ -119,7 +118,6 @@
             if (!person || !email || !event || !returnDate) { alert("Please fill in all fields"); return; }
 
             showLoading("Booking Device...");
-
             const payload = { type: 'checkout', deviceId, model, person, email, event, returnDate };
             await sendToBridge(payload);
         }
@@ -129,7 +127,6 @@
             if (!photoFile) { alert("Please upload a photo of the headset condition."); return; }
 
             showLoading("Uploading Photo...");
-
             const reader = new FileReader();
             reader.onload = async function() {
                 const base64Photo = reader.result.split(',')[1];
@@ -147,20 +144,15 @@
 
         async function sendToBridge(payload) {
             try {
-                // We use fetch with 'no-cors' to prevent redirect blocks.
                 await fetch(BRIDGE_URL, {
                     method: 'POST',
                     mode: 'no-cors',
-                    cache: 'no-cache',
-                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                
-                alert("Request Submitted! The tracker will update in about 60 seconds. Please check your email for confirmation.");
-                setTimeout(() => location.reload(), 2000);
+                alert("Success! Request submitted. Changes will appear on the dashboard in about 60 seconds.");
+                location.reload();
             } catch (error) {
-                console.error(error);
-                alert("Submission failed. Please try again.");
+                alert("Submission failed. Check your internet connection.");
             } finally {
                 hideLoading();
             }
