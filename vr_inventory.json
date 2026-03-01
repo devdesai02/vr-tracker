@@ -1,60 +1,8 @@
 [
-  {
-    "id": "VR-001",
-    "model": "Meta Quest 3",
-    "status": "Available",
-    "last_event": "None"
-  },
-  {
-    "id": "VR-002",
-    "model": "Meta Quest 3",
-    "status": "Available",
-    "last_event": "None"
-  },
-  {
-    "id": "VR-003",
-    "model": "Apple Vision Pro",
-    "status": "In Use",
-    "last_event": "Surgical Demo A"
-  },
-  {
-    "type": "request",
-    "from": "Quora Digest <english-digest-noreply@quora.com>",
-    "timestamp": "2026-03-01T13:44:36.112510"
-  },
-  {
-    "type": "request",
-    "from": "Webex Webinars <webex_comm@em.webex.com>",
-    "timestamp": "2026-03-01T13:44:37.928549"
-  },
-  {
-    "type": "request",
-    "from": "\"Instagram\" <no-reply@mail.instagram.com>",
-    "timestamp": "2026-03-01T13:44:39.751133"
-  },
-  {
-    "type": "request",
-    "from": "Google <no-reply@accounts.google.com>",
-    "timestamp": "2026-03-01T13:44:41.552915"
-  },
-  {
-    "type": "request",
-    "from": "Google <no-reply@accounts.google.com>",
-    "timestamp": "2026-03-01T13:44:43.358887"
-  },
-  {
-    "type": "request",
-    "from": "Dev Desai <ddesai2244@gmail.com>",
-    "timestamp": "2026-03-01T13:44:45.063248"
-  },
-  {
-    "type": "request",
-    "from": "Dev Desai <desaidev242003@gmail.com>",
-    "timestamp": "2026-03-01T13:45:04.725918"
-  },
-  {
-    "type": "request",
-    "from": "Dev Desai <ddesai2244@gmail.com>",
-    "timestamp": "2026-03-01T13:45:06.276208"
-  }
+  {"id": "VR-001", "model": "Meta Quest 3", "status": "Available", "last_event": "None"},
+  {"id": "VR-002", "model": "Meta Quest 3", "status": "Available", "last_event": "None"},
+  {"id": "VR-003", "model": "Meta Quest 3", "status": "Available", "last_event": "None"},
+  {"id": "VR-004", "model": "Meta Quest 3", "status": "Not Available", "last_event": "Maintenance"},
+  {"id": "VR-005", "model": "Meta Quest 3", "status": "Not Available", "last_event": "Loaned Out"},
+  {"id": "VR-006", "model": "Apple Vision Pro", "status": "Available", "last_event": "None"}
 ]
