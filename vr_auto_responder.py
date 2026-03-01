@@ -21,7 +21,7 @@ REPLY_BODY = """Hi,
 
 Thanks for your request! We have received your inquiry regarding the VR headset for your event.
 
-A copy of this request has been sent to devdesai242003@gmail.com for tracking.
+A copy of this request has been sent to desaidev242003@gmail.com for tracking.
 
 Please select your device and confirm your details here:
 https://devdesai02.github.io/vr-tracker/
@@ -108,7 +108,7 @@ def process_emails():
                 reply['Subject'] = f"Re: {msg['Subject']}"
                 reply['To'] = sender
                 reply['Cc'] = "desaidev242003@gmail.com"
-                server.sendmail(GMAIL_USER, [sender, "devdesai242003@gmail.com"], reply.as_string())
+                server.sendmail(GMAIL_USER, [sender, "desaidev242003@gmail.com"], reply.as_string())
                 print(f"Invite sent to {sender}")
             server.quit()
 
