@@ -1,57 +1,8 @@
 [
-  {
-    "id": "VR-001",
-    "model": "Meta Quest 3",
-    "status": "Not Available",
-    "last_event": "Automated System Test (2024-03-07 to 2024-03-10)",
-    "borrower_name": "Gemini Test Bot",
-    "borrower_email": "desaidev2423@gmail.com",
-    "event_name": "Automated System Test",
-    "start_date": "2024-03-07",
-    "end_date": "2024-03-10"
-  },
-  {
-    "id": "VR-002",
-    "model": "Meta Quest 3",
-    "status": "",
-    "last_event": "GGG",
-    "borrower_name": "",
-    "borrower_email": ""
-  },
-  {
-    "id": "VR-003",
-    "model": "Meta Quest 3",
-    "status": "Not Available",
-    "last_event": "GLANS (2026-03-13 to 2026-03-15)",
-    "event_name": "GLANS",
-    "start_date": "2026-03-13",
-    "end_date": "2026-03-15",
-    "borrower_name": "Dev Desai",
-    "borrower_email": "dev.desai@merai.com"
-  },
-  {
-    "id": "VR-004",
-    "model": "Meta Quest 3",
-    "status": "Available",
-    "last_event": "Available",
-    "event_name": "DHAJSJS",
-    "start_date": "2026-03-13",
-    "end_date": "2026-03-16"
-  },
-  {
-    "id": "VR-005",
-    "model": "Meta Quest 3",
-    "status": "Available",
-    "last_event": "None",
-    "borrower_name": "",
-    "borrower_email": ""
-  },
-  {
-    "id": "VR-006",
-    "model": "Apple Vision Pro",
-    "status": "Available",
-    "last_event": "None",
-    "borrower_name": "",
-    "borrower_email": ""
-  }
+  {"id": "VR-001", "model": "Meta Quest 3", "status": "Available", "last_event": "None", "borrower_name": "", "borrower_email": ""},
+  {"id": "VR-002", "model": "Meta Quest 3", "status": "Available", "last_event": "None", "borrower_name": "", "borrower_email": ""},
+  {"id": "VR-003", "model": "Meta Quest 3", "status": "Available", "last_event": "None", "borrower_name": "", "borrower_email": ""},
+  {"id": "VR-004", "model": "Meta Quest 3", "status": "Available", "last_event": "None", "borrower_name": "", "borrower_email": ""},
+  {"id": "VR-005", "model": "Meta Quest 3", "status": "Available", "last_event": "None", "borrower_name": "", "borrower_email": ""},
+  {"id": "VR-006", "model": "Apple Vision Pro", "status": "Available", "last_event": "None", "borrower_name": "", "borrower_email": ""}
 ]
