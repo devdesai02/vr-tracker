@@ -14,19 +14,17 @@ jobs:
       - name: Update Inventory JSON
         run: |
           DEVICE_ID="${{ github.event.client_payload.device_id }}"
-          PERSON="${{ github.event.client_payload.person }}"
+          STATUS="${{ github.event.client_payload.status }}"
           EVENT="${{ github.event.client_payload.event }}"
-          LOCATION="${{ github.event.client_payload.location }}"
           
-          # Use Python to surgically update the JSON
           python3 -c "
           import json, os
           with open('vr_inventory.json', 'r') as f:
               data = json.load(f)
           for item in data:
               if item.get('id') == '$DEVICE_ID':
-                  item['status'] = 'Not Available'
-                  item['last_event'] = f'$EVENT @ $LOCATION (By: $PERSON)'
+                  item['status'] = '$STATUS'
+                  item['last_event'] = '$EVENT'
           with open('vr_inventory.json', 'w') as f:
               json.dump(data, f, indent=2)
           "
@@ -36,5 +34,5 @@ jobs:
           git config --global user.name "VR-Bot"
           git config --global user.email "bot@vr-tracker.com"
           git add vr_inventory.json
-          git commit -m "Automated Checkout: ${{ github.event.client_payload.device_id }}"
+          git commit -m "Automated Status Update: $DEVICE_ID to $STATUS"
           git push

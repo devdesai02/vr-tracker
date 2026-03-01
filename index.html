@@ -16,8 +16,7 @@
 
         body {
             font-family: 'Segoe UI', system-ui, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
+            background-color: var(--bg); color: var(--text);
             margin: 0; padding: 2rem;
             display: flex; flex-direction: column; align-items: center;
         }
@@ -33,8 +32,9 @@
         .form-group { margin-top: 1rem; display: none; background: #0f172a; padding: 1rem; border-radius: 8px; border: 1px solid var(--accent); }
         input { width: 100%; padding: 0.6rem; margin: 0.4rem 0; background: #1e293b; border: 1px solid #475569; color: white; border-radius: 4px; box-sizing: border-box; }
         
-        button { width: 100%; padding: 0.8rem; margin-top: 1rem; cursor: pointer; border: none; border-radius: 6px; font-weight: 700; transition: opacity 0.2s; }
+        button { width: 100%; padding: 0.8rem; margin-top: 1rem; cursor: pointer; border: none; border-radius: 6px; font-weight: 700; }
         .btn-checkout { background: var(--accent); color: #0f172a; }
+        .btn-return { background: #64748b; color: white; }
         .btn-submit { background: var(--available); color: #0f172a; }
 
         #loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; }
@@ -43,12 +43,12 @@
 <body>
 
     <div id="loading-overlay">
-        <h2 style="color: var(--accent)">Processing Request...</h2>
-        <p>Updating inventory and sending confirmation.</p>
+        <h2 id="loading-text" style="color: var(--accent)">Processing...</h2>
+        <p>Updating inventory and syncing data.</p>
     </div>
 
     <h1>VR Equipment Tracker</h1>
-    <p style="color: #94a3b8; margin-bottom: 2rem;">Manage your VR fleet with one click</p>
+    <p style="color: #94a3b8; margin-bottom: 2rem;">Manage your VR fleet lifecycle</p>
 
     <div class="grid" id="inventory-grid"></div>
 
@@ -69,61 +69,96 @@
                 
                 card.innerHTML = `
                     <div class="status-badge ${isAvail ? 'status-available' : 'status-not-available'}">${item.status}</div>
-                    <div style="font-family: monospace; color: var(--accent)">${item.id}</div>
+                    <div style="font-family: monospace; color: var(--accent); font-weight: bold;">${item.id}</div>
                     <h3 style="margin: 0.5rem 0">${item.model}</h3>
                     
                     ${isAvail ? `
-                        <button class="btn-checkout" onclick="toggleForm(${index})">Select Device</button>
-                        <div id="form-${index}" class="form-group">
-                            <input type="text" id="person-${index}" placeholder="Your Name">
+                        <button class="btn-checkout" onclick="toggleForm('checkout-${index}')">Check Out</button>
+                        <div id="checkout-${index}" class="form-group">
+                            <input type="text" id="name-${index}" placeholder="Your Name">
                             <input type="email" id="email-${index}" placeholder="Your Email">
                             <input type="text" id="event-${index}" placeholder="Event Name">
-                            <input type="text" id="loc-${index}" placeholder="Location">
-                            <input type="text" id="date-${index}" placeholder="Date (DD/MM/YYYY)">
-                            <button class="btn-submit" onclick="submitToBridge(${index}, '${item.id}', '${item.model}')">Confirm Selection</button>
+                            <input type="date" id="date-${index}" title="Return Date">
+                            <button class="btn-submit" onclick="submitCheckout(${index}, '${item.id}', '${item.model}')">Confirm Checkout</button>
                         </div>
-                    ` : ''}
+                    ` : `
+                        <button class="btn-return" onclick="toggleForm('return-${index}')">Return Device</button>
+                        <div id="return-${index}" class="form-group">
+                            <p style="font-size: 0.8rem; color: var(--accent)">Upload photo to confirm return:</p>
+                            <input type="file" id="photo-${index}" accept="image/*">
+                            <button class="btn-submit" onclick="submitReturn(${index}, '${item.id}', '${item.model}')">Confirm Return</button>
+                        </div>
+                    `}
 
                     <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 1rem; border-top: 1px solid #334155; padding-top: 0.5rem;">
-                        <strong>Current Status:</strong> ${item.last_event || 'Available'}
+                        <strong>Status:</strong> ${item.last_event || 'Available'}
                     </div>
                 `;
                 grid.appendChild(card);
             });
         }
 
-        function toggleForm(index) {
-            const form = document.getElementById(`form-${index}`);
+        function toggleForm(id) {
+            const form = document.getElementById(id);
             form.style.display = form.style.display === 'block' ? 'none' : 'block';
         }
 
-        async function submitToBridge(index, deviceId, model) {
-            const person = document.getElementById(`person-${index}`).value;
+        async function submitCheckout(index, deviceId, model) {
+            const person = document.getElementById(`name-${index}`).value;
             const email = document.getElementById(`email-${index}`).value;
-            const event = document.getElementById('event-' + index).value;
-            const loc = document.getElementById('loc-' + index).value;
-            const date = document.getElementById('date-' + index).value;
+            const event = document.getElementById(`event-${index}`).value;
+            const returnDate = document.getElementById(`date-${index}`).value;
 
-            if (!person || !email || !event || !loc || !date) { alert("Please fill in all fields"); return; }
+            if (!person || !email || !event || !returnDate) { alert("Please fill in all fields"); return; }
 
-            document.getElementById('loading-overlay').style.display = 'flex';
+            showLoading("Booking Device...");
 
+            const payload = { type: 'checkout', deviceId, model, person, email, event, returnDate };
+            await sendToBridge(payload);
+        }
+
+        async function submitReturn(index, deviceId, model) {
+            const photoFile = document.getElementById(`photo-${index}`).files[0];
+            if (!photoFile) { alert("Please upload a photo of the headset condition."); return; }
+
+            showLoading("Uploading Photo...");
+
+            const reader = new FileReader();
+            reader.onload = async function() {
+                const base64Photo = reader.result.split(',')[1];
+                const payload = { 
+                    type: 'return', 
+                    deviceId, 
+                    model, 
+                    photo: base64Photo, 
+                    photoName: `return_${deviceId}_${Date.now()}.jpg` 
+                };
+                await sendToBridge(payload);
+            };
+            reader.readAsDataURL(photoFile);
+        }
+
+        async function sendToBridge(payload) {
             try {
                 await fetch(BRIDGE_URL, {
                     method: 'POST',
                     mode: 'no-cors',
-                    body: JSON.stringify({ deviceId, model, person, userEmail: email, event, location: loc, date })
+                    body: JSON.stringify(payload)
                 });
-
-                alert("Success! Your selection has been confirmed and a receipt has been sent to your email.");
+                alert("Success! The tracker will update shortly.");
                 location.reload();
             } catch (error) {
-                console.error(error);
-                alert("Error processing request. Please try again later.");
+                alert("Error: " + error.message);
             } finally {
-                document.getElementById('loading-overlay').style.display = 'none';
+                hideLoading();
             }
         }
+
+        function showLoading(text) { 
+            document.getElementById('loading-text').innerText = text;
+            document.getElementById('loading-overlay').style.display = 'flex'; 
+        }
+        function hideLoading() { document.getElementById('loading-overlay').style.display = 'none'; }
 
         loadInventory();
     </script>
