@@ -32,13 +32,11 @@
   {
     "id": "VR-004",
     "model": "Meta Quest 3",
-    "status": "Not Available",
-    "last_event": "DHAJSJS (2026-03-13 to 2026-03-16)",
+    "status": "Available",
+    "last_event": "Available",
     "event_name": "DHAJSJS",
     "start_date": "2026-03-13",
-    "end_date": "2026-03-16",
-    "borrower_name": "Dev D",
-    "borrower_email": "dev.desai@merai.co"
+    "end_date": "2026-03-16"
   },
   {
     "id": "VR-005",
