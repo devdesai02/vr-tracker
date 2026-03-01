@@ -32,10 +32,9 @@ function doPost(e) {
   var photoUrl = "N/A";
 
   if (data.type === 'checkout') {
-    targetUserEmail = data.email; // FROM WEBSITE FORM
+    targetUserEmail = data.email; 
     targetUserName = data.person;
     
-    // Update Inventory
     inventory.forEach(function(item) {
       if (item.id === data.deviceId) {
         item.status = "Not Available";
@@ -65,13 +64,15 @@ function doPost(e) {
       }
     });
 
-    targetUserEmail = borrowerInfo.borrower_email; // FETCHED FROM SAVED JSON
+    targetUserEmail = borrowerInfo.borrower_email; 
     targetUserName = borrowerInfo.borrower_name;
     
     if (data.photo) {
-      var folder = DriveApp.getFolderById(photoFolderId);
-      var file = folder.createFile(data.photoName, Utilities.base64Decode(data.photo), MimeType.JPEG);
-      photoUrl = file.getUrl();
+      try {
+        var folder = DriveApp.getFolderById(photoFolderId);
+        var file = folder.createFile(data.photoName, Utilities.base64Decode(data.photo), MimeType.JPEG);
+        photoUrl = file.getUrl();
+      } catch(e) { photoUrl = "Upload Error"; }
     }
 
     var subject = "Return Confirmed: " + data.deviceId;
@@ -87,7 +88,9 @@ function doPost(e) {
 
   // 3. SEND EMAIL (TO USER, CC YOU)
   if (targetUserEmail) {
-    GmailApp.sendEmail(targetUserEmail, subject, body, { cc: CC_ADDRESS, name: "VR Inventory Bot" });
+    try {
+      GmailApp.sendEmail(targetUserEmail, subject, body, { cc: CC_ADDRESS, name: "VR Inventory Bot" });
+    } catch(e) { console.log("Email Failed: " + e.message); }
   }
 
   return ContentService.createTextOutput("Success").setMimeType(ContentService.MimeType.TEXT);
