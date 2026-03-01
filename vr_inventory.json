@@ -20,8 +20,8 @@
   {
     "id": "VR-004",
     "model": "Meta Quest 3",
-    "status": "Available",
-    "last_event": "None"
+    "status": "",
+    "last_event": "STR"
   },
   {
     "id": "VR-005",
