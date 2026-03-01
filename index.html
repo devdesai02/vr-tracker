@@ -14,6 +14,7 @@
         .status-not-available { background: #7f1d1d; color: #fca5a5; }
         .form-group { margin-top: 1rem; display: none; background: #0f172a; padding: 1rem; border-radius: 8px; border: 1px solid var(--accent); }
         input { width: 100%; padding: 0.6rem; margin: 0.4rem 0; background: #1e293b; border: 1px solid #475569; color: white; border-radius: 4px; box-sizing: border-box; }
+        .date-label { font-size: 0.7rem; color: var(--accent); margin-top: 5px; display: block; }
         button { width: 100%; padding: 0.8rem; margin-top: 1rem; cursor: pointer; border: none; border-radius: 6px; font-weight: 700; }
         .btn-checkout { background: var(--accent); color: #0f172a; }
         .btn-return { background: #64748b; color: white; }
@@ -37,8 +38,7 @@
                 if (!item.id) return;
                 const card = document.createElement('div');
                 card.className = 'card';
-                const statusStr = (item.status || "").trim().toLowerCase();
-                const isAvail = statusStr === 'available';
+                const isAvail = (item.status || "").trim().toLowerCase() === 'available';
                 card.innerHTML = `
                     <div class="status-badge ${isAvail ? 'status-available' : 'status-not-available'}">${item.status}</div>
                     <div style="font-family: monospace; color: var(--accent); font-weight: bold;">${item.id}</div>
@@ -50,7 +50,10 @@
                             <input type="email" id="email-${index}" placeholder="Your Email">
                             <input type="text" id="event-${index}" placeholder="Event Name">
                             <input type="text" id="loc-${index}" placeholder="Location">
-                            <input type="date" id="date-${index}" title="Return Date">
+                            <label class="date-label">FROM DATE:</label>
+                            <input type="date" id="start-${index}">
+                            <label class="date-label">TO DATE:</label>
+                            <input type="date" id="end-${index}">
                             <button class="btn-submit" onclick="submitCheckout(${index}, '${item.id}', '${item.model}')">Confirm Checkout</button>
                         </div>
                     ` : `
@@ -75,10 +78,11 @@
             const email = document.getElementById(`email-${index}`).value;
             const event = document.getElementById(`event-${index}`).value;
             const loc = document.getElementById(`loc-${index}`).value;
-            const returnDate = document.getElementById(`date-${index}`).value;
-            if (!person || !email || !event || !loc || !returnDate) { alert("Please fill in all fields"); return; }
+            const start = document.getElementById(`start-${index}`).value;
+            const end = document.getElementById(`end-${index}`).value;
+            if (!person || !email || !event || !loc || !start || !end) { alert("Please fill in all fields"); return; }
             showLoading("Processing Checkout...");
-            await sendToBridge({ type: 'checkout', deviceId, model, person, email, event, location: loc, returnDate });
+            await sendToBridge({ type: 'checkout', deviceId, model, person, email, event, location: loc, startDate: start, endDate: end });
         }
         async function submitReturn(index, deviceId, model) {
             const photoFile = document.getElementById(`photo-${index}`).files[0];
@@ -93,7 +97,7 @@
         async function sendToBridge(payload) {
             try {
                 await fetch(BRIDGE_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-                alert("Success! Request confirmed. The dashboard will update in 60 seconds.");
+                alert("Success! Request confirmed. Check your email.");
                 location.reload();
             } catch (error) { alert("Error connecting to server."); } finally { hideLoading(); }
         }
