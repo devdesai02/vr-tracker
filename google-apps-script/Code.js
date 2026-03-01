@@ -1,12 +1,11 @@
 /**
- * VR Tracker Master Bridge (PRO - V2.5 - PHOTO FIX)
+ * VR Tracker Master Bridge (PRO - V2.6 - ORIGINAL PHOTO FORMAT)
  * Managed by VR Inventory Bot via Clasp
  */
 
 function doPost(e) {
   var data = JSON.parse(e.postData.contents);
   var token = PropertiesService.getScriptProperties().getProperty("GITHUB_TOKEN");
-  
   var CC_ADDRESS = "desaidev242003@gmail.com"; 
   var repo = "devdesai02/vr-tracker";
   var photoFolderId = "1njDIUbohdWyqW5J5_l5nZw2_6K5x7mb-";
@@ -17,8 +16,7 @@ function doPost(e) {
   var logUrl = "https://api.github.com/repos/" + repo + "/contents/requests_log.csv";
   
   var invRes = UrlFetchApp.fetch(inventoryUrl, { headers: { "Authorization": "token " + token } });
-  var invFileData = JSON.parse(invRes.getContentText());
-  var inventory = JSON.parse(Utilities.newBlob(Utilities.base64Decode(invFileData.content)).getDataAsString());
+  var inventory = JSON.parse(Utilities.newBlob(Utilities.base64Decode(JSON.parse(invRes.getContentText()).content)).getDataAsString());
 
   var logRes = UrlFetchApp.fetch(logUrl, { headers: { "Authorization": "token " + token } });
   var logFileData = JSON.parse(logRes.getContentText());
@@ -31,11 +29,10 @@ function doPost(e) {
   if (data.type === 'checkout') {
     targetUserEmail = data.email; 
     targetUserName = data.person;
-    
     inventory.forEach(function(item) {
       if (item.id === data.deviceId) {
         item.status = "Not Available";
-        item.last_event = (data.event || "N/A") + " (" + (data.startDate || "N/A") + " to " + (data.endDate || "N/A") + ")";
+        item.last_event = data.event + " (" + data.startDate + " to " + data.endDate + ")";
         item.borrower_name = targetUserName;
         item.borrower_email = targetUserEmail;
         item.event_name = data.event;
@@ -43,61 +40,42 @@ function doPost(e) {
         item.end_date = data.endDate;
       }
     });
-
     var subject = "Selection Confirmed: " + data.deviceId;
-    var body = "Hi " + targetUserName + ",\n\nRequest Confirmed for " + data.model + ".\n\n" +
-               "Device: " + data.deviceId + "\nEvent: " + data.event + "\n" +
-               "Period: " + data.startDate + " to " + data.endDate + "\n\n" +
-               "Thank you!";
+    var body = "Hi " + targetUserName + ",\n\nRequest Confirmed for " + data.model + ".\n\nDetails: " + data.deviceId + " for " + data.event + ".\n\nThank you!";
 
   } else if (data.type === 'return') {
     var borrowerInfo = {};
     inventory.forEach(function(item) {
       if (item.id === data.deviceId) {
         borrowerInfo = JSON.parse(JSON.stringify(item));
-        item.status = "Available";
-        item.last_event = "Available";
+        item.status = "Available"; item.last_event = "Available";
         delete item.borrower_name; delete item.borrower_email; 
       }
     });
-
     targetUserEmail = borrowerInfo.borrower_email; 
     targetUserName = borrowerInfo.borrower_name;
     
     if (data.photo) {
       try {
         var folder = DriveApp.getFolderById(photoFolderId);
-        // FIX: Use provided mimeType or default to image/jpeg
-        var mime = data.mimeType || "image/jpeg";
-        var fileName = data.fileName || ("return_" + data.deviceId);
-        
-        // Decoded data to Blob
-        var decodedData = Utilities.base64Decode(data.photo);
-        var blob = Utilities.newBlob(decodedData, mime, fileName);
-        
+        // FIX: Use exact mime type and filename from user upload
+        var blob = Utilities.newBlob(Utilities.base64Decode(data.photo), data.mimeType, data.fileName);
         var file = folder.createFile(blob);
         file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
         photoUrl = file.getUrl();
       } catch(e) { photoUrl = "Upload Error: " + e.message; }
     }
-
     var subject = "Return Confirmed: " + data.deviceId;
-    var body = "Hi " + (targetUserName || "Borrower") + ",\n\nReturn Confirmed for " + data.model + ".\n\n" +
-               "Device: " + data.deviceId + "\nReturned On: " + currentDateStr + "\n" +
-               "Condition Photo: " + photoUrl + "\n\n" +
-               "Thank you!";
+    var body = "Hi " + (targetUserName || "Borrower") + ",\n\nReturn Confirmed for " + data.model + ".\n\nDevice: " + data.deviceId + "\nReturned On: " + currentDateStr + "\nPhoto: " + photoUrl + "\n\nThank you!";
   }
 
   var updatedLogs = logs.trim() + "\n" + [timestamp.toISOString(), targetUserName, targetUserEmail, data.deviceId, data.type.toUpperCase(), photoUrl].join(",");
   UrlFetchApp.fetch(logUrl, { method: "put", headers: { "Authorization": "token " + token }, payload: JSON.stringify({ message: "Bot: Update log", content: Utilities.base64Encode(updatedLogs, Utilities.Charset.UTF_8), sha: logFileData.sha })});
-  UrlFetchApp.fetch(inventoryUrl, { method: "put", headers: { "Authorization": "token " + token }, payload: JSON.stringify({ message: "Bot: Update inventory", content: Utilities.base64Encode(JSON.stringify(inventory, null, 2), Utilities.Charset.UTF_8), sha: invFileData.sha })});
+  UrlFetchApp.fetch(inventoryUrl, { method: "put", headers: { "Authorization": "token " + token }, payload: JSON.stringify({ message: "Bot: Update inventory", content: Utilities.base64Encode(JSON.stringify(inventory, null, 2), Utilities.Charset.UTF_8), sha: JSON.parse(invRes.getContentText()).sha })});
 
   if (targetUserEmail) {
-    try {
-      GmailApp.sendEmail(targetUserEmail, subject, body, { cc: CC_ADDRESS, name: "VR Inventory Bot" });
-    } catch(e) { console.log("Email Failed: " + e.message); }
+    GmailApp.sendEmail(targetUserEmail, subject, body, { cc: CC_ADDRESS, name: "VR Inventory Bot" });
   }
-
   return ContentService.createTextOutput("Success").setMimeType(ContentService.MimeType.TEXT);
 }
 
