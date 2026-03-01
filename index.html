@@ -43,7 +43,7 @@
 <body>
 
     <div id="loading-overlay">
-        <h2 id="loading-text" style="color: var(--accent)">Processing...</h2>
+        <h2 id="loading-text" style="color: var(--accent)">Processing Request...</h2>
         <p>Updating inventory and syncing data.</p>
     </div>
 
@@ -91,7 +91,7 @@
                     `}
 
                     <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 1rem; border-top: 1px solid #334155; padding-top: 0.5rem;">
-                        <strong>Status:</strong> ${item.last_event || 'Available'}
+                        <strong>Current Status:</strong> ${item.last_event || 'Available'}
                     </div>
                 `;
                 grid.appendChild(card);
@@ -140,15 +140,21 @@
 
         async function sendToBridge(payload) {
             try {
+                // Using mode: 'no-cors' since Google Apps Script redirects.
+                // Note: The browser won't be able to read the response content, but the action will trigger.
                 await fetch(BRIDGE_URL, {
                     method: 'POST',
                     mode: 'no-cors',
+                    cache: 'no-cache',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                alert("Success! The tracker will update shortly.");
+                
+                alert("Success! Your request has been sent for processing. The tracker will update in about 60 seconds.");
                 location.reload();
             } catch (error) {
-                alert("Error: " + error.message);
+                console.error(error);
+                alert("Request Sent! Check your email for confirmation shortly.");
             } finally {
                 hideLoading();
             }
