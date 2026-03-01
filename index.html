@@ -13,71 +13,45 @@
             --available: #22c55e;
             --not-available: #ef4444;
         }
-
-        body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background-color: var(--bg); color: var(--text);
-            margin: 0; padding: 2rem;
-            display: flex; flex-direction: column; align-items: center;
-        }
-
-        h1 { color: var(--accent); margin-bottom: 0.5rem; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); padding: 2rem; display: flex; flex-direction: column; align-items: center; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; width: 100%; max-width: 1100px; }
-        .card { background: var(--card-bg); padding: 1.5rem; border-radius: 12px; border: 1px solid #334155; position: relative; }
-        
+        .card { background: var(--card-bg); padding: 1.5rem; border-radius: 12px; border: 1px solid #334155; }
         .status-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 99px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; margin-bottom: 1rem; }
         .status-available { background: #14532d; color: #4ade80; }
         .status-not-available { background: #7f1d1d; color: #fca5a5; }
-
         .form-group { margin-top: 1rem; display: none; background: #0f172a; padding: 1rem; border-radius: 8px; border: 1px solid var(--accent); }
         input { width: 100%; padding: 0.6rem; margin: 0.4rem 0; background: #1e293b; border: 1px solid #475569; color: white; border-radius: 4px; box-sizing: border-box; }
-        
         button { width: 100%; padding: 0.8rem; margin-top: 1rem; cursor: pointer; border: none; border-radius: 6px; font-weight: 700; }
         .btn-checkout { background: var(--accent); color: #0f172a; }
         .btn-return { background: #64748b; color: white; }
         .btn-submit { background: var(--available); color: #0f172a; }
-
         #loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; }
     </style>
 </head>
 <body>
-
     <div id="loading-overlay">
-        <h2 id="loading-text" style="color: var(--accent)">Processing...</h2>
-        <p>Updating inventory and syncing data.</p>
+        <h2 id="loading-text" style="color: var(--accent)">Updating...</h2>
     </div>
-
     <h1>VR Equipment Tracker</h1>
     <p style="color: #94a3b8; margin-bottom: 2rem;">Manage your VR fleet lifecycle</p>
-
     <div class="grid" id="inventory-grid"></div>
-
-    <button onclick="location.reload(true)" style="margin-top: 3rem; background: transparent; color: #64748b; border: 1px solid #334155; width: auto; padding: 0.5rem 1rem;">Force Refresh Dashboard</button>
-
     <script>
         const BRIDGE_URL = "https://script.google.com/macros/s/AKfycbzH5nY6JctezyrNsrsFIX1Nc8nvYZgUhFDF4yyHS5wz5L11RPLF0SEQOYL2Pft-G4A/exec";
-
         async function loadInventory() {
             const response = await fetch(`vr_inventory.json?t=${Date.now()}`);
             const data = await response.json();
             const grid = document.getElementById('inventory-grid');
             grid.innerHTML = '';
-
             data.forEach((item, index) => {
                 if (!item.id) return;
                 const card = document.createElement('div');
                 card.className = 'card';
-                
                 const statusStr = (item.status || "").trim().toLowerCase();
                 const isAvail = statusStr === 'available';
-                
                 card.innerHTML = `
-                    <div class="status-badge ${isAvail ? 'status-available' : 'status-not-available'}">
-                        ${item.status}
-                    </div>
+                    <div class="status-badge ${isAvail ? 'status-available' : 'status-not-available'}">${item.status}</div>
                     <div style="font-family: monospace; color: var(--accent); font-weight: bold;">${item.id}</div>
                     <h3 style="margin: 0.5rem 0">${item.model}</h3>
-                    
                     ${isAvail ? `
                         <button class="btn-checkout" onclick="toggleForm('checkout-${index}')">Check Out</button>
                         <div id="checkout-${index}" class="form-group">
@@ -90,12 +64,12 @@
                     ` : `
                         <button class="btn-return" onclick="toggleForm('return-${index}')">Return Device</button>
                         <div id="return-${index}" class="form-group">
-                            <p style="font-size: 0.8rem; color: var(--accent)">Upload photo to confirm return:</p>
+                            <input type="email" id="ret-email-${index}" placeholder="Your Email">
+                            <p style="font-size: 0.8rem; color: var(--accent)">Upload photo of headset condition:</p>
                             <input type="file" id="photo-${index}" accept="image/*">
                             <button class="btn-submit" onclick="submitReturn(${index}, '${item.id}', '${item.model}')">Confirm Return</button>
                         </div>
                     `}
-
                     <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 1rem; border-top: 1px solid #334155; padding-top: 0.5rem;">
                         <strong>Current Status:</strong> ${item.last_event || 'Available'}
                     </div>
@@ -103,67 +77,36 @@
                 grid.appendChild(card);
             });
         }
-
-        function toggleForm(id) {
-            const form = document.getElementById(id);
-            form.style.display = form.style.display === 'block' ? 'none' : 'block';
-        }
-
+        function toggleForm(id) { const form = document.getElementById(id); form.style.display = form.style.display === 'block' ? 'none' : 'block'; }
         async function submitCheckout(index, deviceId, model) {
             const person = document.getElementById(`name-${index}`).value;
             const email = document.getElementById(`email-${index}`).value;
             const event = document.getElementById(`event-${index}`).value;
             const returnDate = document.getElementById(`date-${index}`).value;
-
             if (!person || !email || !event || !returnDate) { alert("Please fill in all fields"); return; }
-
-            showLoading("Booking Device...");
-            const payload = { type: 'checkout', deviceId, model, person, email, event, returnDate };
-            await sendToBridge(payload);
+            showLoading("Processing Checkout...");
+            await sendToBridge({ type: 'checkout', deviceId, model, person, email, event, returnDate });
         }
-
         async function submitReturn(index, deviceId, model) {
+            const email = document.getElementById(`ret-email-${index}`).value;
             const photoFile = document.getElementById(`photo-${index}`).files[0];
-            if (!photoFile) { alert("Please upload a photo of the headset condition."); return; }
-
-            showLoading("Uploading Photo...");
+            if (!email || !photoFile) { alert("Please provide your email and a photo."); return; }
+            showLoading("Processing Return...");
             const reader = new FileReader();
             reader.onload = async function() {
-                const base64Photo = reader.result.split(',')[1];
-                const payload = { 
-                    type: 'return', 
-                    deviceId, 
-                    model, 
-                    photo: base64Photo, 
-                    photoName: `return_${deviceId}_${Date.now()}.jpg` 
-                };
-                await sendToBridge(payload);
+                await sendToBridge({ type: 'return', deviceId, model, email, photo: reader.result.split(',')[1], photoName: `return_${deviceId}.jpg` });
             };
             reader.readAsDataURL(photoFile);
         }
-
         async function sendToBridge(payload) {
             try {
-                await fetch(BRIDGE_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify(payload)
-                });
-                alert("Success! Request submitted. Changes will appear on the dashboard in about 60 seconds.");
+                await fetch(BRIDGE_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+                alert("Success! Check your email. The dashboard will update in 60 seconds.");
                 location.reload();
-            } catch (error) {
-                alert("Submission failed. Check your internet connection.");
-            } finally {
-                hideLoading();
-            }
+            } catch (error) { alert("Submission failed. Check connection."); } finally { hideLoading(); }
         }
-
-        function showLoading(text) { 
-            document.getElementById('loading-text').innerText = text;
-            document.getElementById('loading-overlay').style.display = 'flex'; 
-        }
+        function showLoading(text) { document.getElementById('loading-text').innerText = text; document.getElementById('loading-overlay').style.display = 'flex'; }
         function hideLoading() { document.getElementById('loading-overlay').style.display = 'none'; }
-
         loadInventory();
     </script>
 </body>
