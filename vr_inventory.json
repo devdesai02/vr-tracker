@@ -21,11 +21,13 @@
   {
     "id": "VR-003",
     "model": "Meta Quest 3",
-    "status": "Available",
-    "last_event": "Available",
-    "event_name": "STR",
+    "status": "Not Available",
+    "last_event": "GLANS (2026-03-13 to 2026-03-15)",
+    "event_name": "GLANS",
     "start_date": "2026-03-13",
-    "end_date": "2026-03-15"
+    "end_date": "2026-03-15",
+    "borrower_name": "Dev Desai",
+    "borrower_email": "dev.desai@merai.com"
   },
   {
     "id": "VR-004",
