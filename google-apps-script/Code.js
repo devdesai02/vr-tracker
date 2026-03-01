@@ -1,5 +1,5 @@
 /**
- * VR Tracker Master Bridge (PRO - SMART LIFECYCLE)
+ * VR Tracker Master Bridge (PRO - SMART LIFECYCLE V2)
  * Managed by VR Inventory Bot via Clasp
  */
 
@@ -34,24 +34,26 @@ function doPost(e) {
     targetUserEmail = data.email;
     targetUserName = data.person;
     emailSubject = "Selection Confirmed: " + data.deviceId;
-    emailBody = "Hi " + targetUserName + ",\n\nRequest Confirmed for " + data.model + ".\n\n" +
+    emailBody = "Hi " + targetUserName + ",\n\nSelection Confirmed for " + data.model + ".\n\n" +
                 "--- Details ---\n" +
                 "Device ID: " + data.deviceId + "\n" +
                 "Event: " + data.event + "\n" +
                 "Location: " + data.location + "\n" +
-                "Return Due Date: " + data.returnDate + "\n\n" +
+                "From Date: " + data.startDate + "\n" +
+                "To Date: " + data.endDate + "\n\n" +
                 "Thank you!\nVR Inventory Bot";
 
     // Update Inventory JSON locally
     inventory.forEach(function(item) {
       if (item.id === data.deviceId) {
         item.status = "Not Available";
-        item.last_event = data.event + " (Due: " + data.returnDate + ")";
+        item.last_event = data.event + " (" + data.startDate + " to " + data.endDate + ")";
         item.borrower_name = data.person;
         item.borrower_email = data.email;
         item.event_name = data.event;
         item.location = data.location;
-        item.return_date = data.returnDate;
+        item.start_date = data.startDate;
+        item.end_date = data.endDate;
       }
     });
 
@@ -60,16 +62,15 @@ function doPost(e) {
     var borrowerInfo = {};
     inventory.forEach(function(item) {
       if (item.id === data.deviceId) {
-        borrowerInfo = item;
+        borrowerInfo = JSON.parse(JSON.stringify(item)); // Deep copy
         item.status = "Available";
         item.last_event = "Available";
-        // Clear borrower info
         delete item.borrower_name; delete item.borrower_email; delete item.event_name; 
-        delete item.location; delete item.return_date;
+        delete item.location; delete item.start_date; delete item.end_date;
       }
     });
 
-    targetUserEmail = borrowerInfo.borrower_email || "desaidev2423@gmail.com";
+    targetUserEmail = borrowerInfo.borrower_email;
     targetUserName = borrowerInfo.borrower_name || "Borrower";
     
     if (data.photo) {
@@ -85,14 +86,17 @@ function doPost(e) {
                 "--- Return Details ---\n" +
                 "Device ID: " + data.deviceId + "\n" +
                 "Original Event: " + (borrowerInfo.event_name || "N/A") + "\n" +
+                "Period: " + (borrowerInfo.start_date || "N/A") + " to " + (borrowerInfo.end_date || "N/A") + "\n" +
                 "Returned On: " + timestamp.split('T')[0] + "\n" +
                 "Condition Photo: " + photoUrl + "\n\n" +
                 "Thank you for returning the device!\nVR Inventory Bot";
   }
 
   // 2. Push updated CSV Log back to GitHub
-  var newLogRow = [timestamp, targetUserName, targetUserEmail, data.event||"N/A", data.location||"N/A", data.returnDate||"N/A", data.deviceId, data.model, data.type.toUpperCase(), photoUrl].join(",");
+  var logDate = (data.type === 'checkout') ? (data.startDate + " to " + data.endDate) : (borrowerInfo.start_date + " to " + borrowerInfo.end_date);
+  var newLogRow = [timestamp, targetUserName, targetUserEmail, (data.event||borrowerInfo.event_name||"N/A"), (data.location||borrowerInfo.location||"N/A"), logDate, data.deviceId, data.model, data.type.toUpperCase(), photoUrl].join(",");
   var updatedLogs = logs.trim() + "\n" + newLogRow;
+  
   UrlFetchApp.fetch(logUrl, {
     method: "put",
     headers: { "Authorization": "token " + token, "Content-Type": "application/json" },
@@ -108,7 +112,9 @@ function doPost(e) {
 
   // 4. Send the Email
   try {
-    GmailApp.sendEmail(targetUserEmail, emailSubject, emailBody, { cc: ccEmail, name: "VR Bot" });
+    if (targetUserEmail) {
+      GmailApp.sendEmail(targetUserEmail, emailSubject, emailBody, { cc: ccEmail, name: "VR Bot" });
+    }
   } catch(err) { console.log("Mail Failed: " + err.message); }
 
   return ContentService.createTextOutput("Success").setMimeType(ContentService.MimeType.TEXT);
@@ -126,7 +132,7 @@ function instantHandshake() {
     var content = (lastMsg.getSubject() + " " + lastMsg.getPlainBody()).toLowerCase();
     
     if (lastMsg.isUnread() && content.indexOf("request") !== -1 && lastMsg.getFrom().indexOf("VR Inventory Bot") === -1) {
-      lastMsg.reply("Hi,\n\nThanks for your VR request! Please select your device and confirm your details here:\n" + websiteUrl + "\n\nBest regards,\nVR Inventory Bot", { cc: ccEmail, name: "VR Inventory Bot" });
+      lastMsg.reply("Hi,\n\nThanks for your VR request! Please select your device and confirm your details here:\n" + websiteUrl + "\n\nOnce confirmed, we will finalize your request.\n\nBest regards,\nVR Inventory Bot", { cc: ccEmail, name: "VR Inventory Bot" });
       threads[i].markRead();
     }
   }
