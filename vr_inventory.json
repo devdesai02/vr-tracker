@@ -1,8 +1,43 @@
 [
-  {"id": "VR-001", "model": "Meta Quest 3", "status": "Available", "last_event": "None"},
-  {"id": "VR-002", "model": "Meta Quest 3", "status": "Available", "last_event": "None"},
-  {"id": "VR-003", "model": "Meta Quest 3", "status": "Available", "last_event": "None"},
-  {"id": "VR-004", "model": "Meta Quest 3", "status": "Not Available", "last_event": "Maintenance"},
-  {"id": "VR-005", "model": "Meta Quest 3", "status": "Not Available", "last_event": "Loaned Out"},
-  {"id": "VR-006", "model": "Apple Vision Pro", "status": "Available", "last_event": "None"}
+  {
+    "id": "VR-001",
+    "model": "Meta Quest 3",
+    "status": "Available",
+    "last_event": "None"
+  },
+  {
+    "id": "VR-002",
+    "model": "Meta Quest 3",
+    "status": "Available",
+    "last_event": "None"
+  },
+  {
+    "id": "VR-003",
+    "model": "Meta Quest 3",
+    "status": "Available",
+    "last_event": "None"
+  },
+  {
+    "id": "VR-004",
+    "model": "Meta Quest 3",
+    "status": "Not Available",
+    "last_event": "Maintenance"
+  },
+  {
+    "id": "VR-005",
+    "model": "Meta Quest 3",
+    "status": "Not Available",
+    "last_event": "Loaned Out"
+  },
+  {
+    "id": "VR-006",
+    "model": "Apple Vision Pro",
+    "status": "Available",
+    "last_event": "None"
+  },
+  {
+    "type": "request",
+    "from": "Dev Desai <desaidev242003@gmail.com>",
+    "timestamp": "2026-03-01T14:33:32.353556"
+  }
 ]
