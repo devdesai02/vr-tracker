@@ -12,24 +12,30 @@ jobs:
           token: ${{ secrets.VR_TOKEN }}
 
       - name: Update Inventory JSON
+        env:
+          DEVICE_ID: "${{ github.event.client_payload.device_id }}"
+          STATUS: "${{ github.event.client_payload.status }}"
+          EVENT: "${{ github.event.client_payload.event }}"
         run: |
-          DEVICE_ID="${{ github.event.client_payload.device_id }}"
-          STATUS="${{ github.event.client_payload.status }}"
-          EVENT="${{ github.event.client_payload.event }}"
-          
           python3 -c "
           import json, os
+          did = os.environ.get('DEVICE_ID')
+          status = os.environ.get('STATUS')
+          event = os.environ.get('EVENT')
           with open('vr_inventory.json', 'r') as f:
               data = json.load(f)
           for item in data:
-              if item.get('id') == '$DEVICE_ID':
-                  item['status'] = '$STATUS'
-                  item['last_event'] = '$EVENT'
+              if item.get('id') == did:
+                  item['status'] = status
+                  item['last_event'] = event
           with open('vr_inventory.json', 'w') as f:
               json.dump(data, f, indent=2)
           "
 
       - name: Commit and Push
+        env:
+          DEVICE_ID: "${{ github.event.client_payload.device_id }}"
+          STATUS: "${{ github.event.client_payload.status }}"
         run: |
           git config --global user.name "VR-Bot"
           git config --global user.email "bot@vr-tracker.com"
