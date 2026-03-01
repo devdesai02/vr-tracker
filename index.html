@@ -67,6 +67,7 @@
 
         .status.available { background: #14532d; color: #4ade80; }
         .status.in-use { background: #78350f; color: #fbbf24; }
+        .status.not-available { background: #7f1d1d; color: #fca5a5; }
 
         .device-id {
             font-family: monospace;
@@ -94,8 +95,8 @@
     <script>
         async function loadInventory() {
             try {
-                // In a real GitHub Pages setup, we fetch the JSON file from the repo
-                const response = await fetch('vr_inventory.json');
+                // Fetch the JSON file with a timestamp to bypass browser cache
+                const response = await fetch(`vr_inventory.json?t=${Date.now()}`);
                 const data = await response.json();
                 
                 const grid = document.getElementById('inventory-grid');
