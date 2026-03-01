@@ -5,14 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VR Equipment Tracker</title>
     <style>
-        :root {
-            --bg: #0f172a;
-            --card-bg: #1e293b;
-            --text: #f8fafc;
-            --accent: #38bdf8;
-            --available: #22c55e;
-            --not-available: #ef4444;
-        }
+        :root { --bg: #0f172a; --card-bg: #1e293b; --text: #f8fafc; --accent: #38bdf8; --available: #22c55e; --not-available: #ef4444; }
         body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); padding: 2rem; display: flex; flex-direction: column; align-items: center; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; width: 100%; max-width: 1100px; }
         .card { background: var(--card-bg); padding: 1.5rem; border-radius: 12px; border: 1px solid #334155; }
@@ -29,9 +22,7 @@
     </style>
 </head>
 <body>
-    <div id="loading-overlay">
-        <h2 id="loading-text" style="color: var(--accent)">Updating...</h2>
-    </div>
+    <div id="loading-overlay"><h2 id="loading-text" style="color: var(--accent)">Processing...</h2></div>
     <h1>VR Equipment Tracker</h1>
     <p style="color: #94a3b8; margin-bottom: 2rem;">Manage your VR fleet lifecycle</p>
     <div class="grid" id="inventory-grid"></div>
@@ -65,18 +56,14 @@
                     ` : `
                         <button class="btn-return" onclick="toggleForm('return-${index}')">Return Device</button>
                         <div id="return-${index}" class="form-group">
-                            <input type="text" id="ret-name-${index}" placeholder="Your Name">
-                            <input type="email" id="ret-email-${index}" placeholder="Your Email">
-                            <input type="text" id="ret-event-${index}" placeholder="Event Name">
-                            <input type="text" id="ret-loc-${index}" placeholder="Location">
-                            <input type="date" id="ret-date-${index}" title="Return Date">
-                            <p style="font-size: 0.8rem; color: var(--accent)">Upload photo of headset condition:</p>
+                            <p style="font-size: 0.8rem; color: var(--accent); margin-bottom: 5px;">Currently with: ${item.borrower_name || 'N/A'}</p>
+                            <p style="font-size: 0.8rem; color: var(--text)">Upload photo to confirm return:</p>
                             <input type="file" id="photo-${index}" accept="image/*">
                             <button class="btn-submit" onclick="submitReturn(${index}, '${item.id}', '${item.model}')">Confirm Return</button>
                         </div>
                     `}
                     <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 1rem; border-top: 1px solid #334155; padding-top: 0.5rem;">
-                        <strong>Current Status:</strong> ${item.last_event || 'Available'}
+                        <strong>Status:</strong> ${item.last_event || 'Available'}
                     </div>
                 `;
                 grid.appendChild(card);
@@ -94,26 +81,21 @@
             await sendToBridge({ type: 'checkout', deviceId, model, person, email, event, location: loc, returnDate });
         }
         async function submitReturn(index, deviceId, model) {
-            const person = document.getElementById(`ret-name-${index}`).value;
-            const email = document.getElementById(`ret-email-${index}`).value;
-            const event = document.getElementById(`ret-event-${index}`).value;
-            const loc = document.getElementById(`ret-loc-${index}`).value;
-            const date = document.getElementById(`ret-date-${index}`).value;
             const photoFile = document.getElementById(`photo-${index}`).files[0];
-            if (!person || !email || !event || !loc || !date || !photoFile) { alert("Please fill in all fields and provide a photo."); return; }
+            if (!photoFile) { alert("Please upload a photo."); return; }
             showLoading("Processing Return...");
             const reader = new FileReader();
             reader.onload = async function() {
-                await sendToBridge({ type: 'return', deviceId, model, person, email, event, location: loc, date, photo: reader.result.split(',')[1], photoName: `return_${deviceId}.jpg` });
+                await sendToBridge({ type: 'return', deviceId, model, photo: reader.result.split(',')[1], photoName: `return_${deviceId}.jpg` });
             };
             reader.readAsDataURL(photoFile);
         }
         async function sendToBridge(payload) {
             try {
                 await fetch(BRIDGE_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-                alert("Success! The dashboard will update in about 60 seconds.");
+                alert("Success! Request confirmed. The dashboard will update in 60 seconds.");
                 location.reload();
-            } catch (error) { alert("Submission failed. Check connection."); } finally { hideLoading(); }
+            } catch (error) { alert("Error connecting to server."); } finally { hideLoading(); }
         }
         function showLoading(text) { document.getElementById('loading-text').innerText = text; document.getElementById('loading-overlay').style.display = 'flex'; }
         function hideLoading() { document.getElementById('loading-overlay').style.display = 'none'; }
