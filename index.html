@@ -58,13 +58,18 @@
                             <input type="text" id="name-${index}" placeholder="Your Name">
                             <input type="email" id="email-${index}" placeholder="Your Email">
                             <input type="text" id="event-${index}" placeholder="Event Name">
+                            <input type="text" id="loc-${index}" placeholder="Location">
                             <input type="date" id="date-${index}" title="Return Date">
                             <button class="btn-submit" onclick="submitCheckout(${index}, '${item.id}', '${item.model}')">Confirm Checkout</button>
                         </div>
                     ` : `
                         <button class="btn-return" onclick="toggleForm('return-${index}')">Return Device</button>
                         <div id="return-${index}" class="form-group">
+                            <input type="text" id="ret-name-${index}" placeholder="Your Name">
                             <input type="email" id="ret-email-${index}" placeholder="Your Email">
+                            <input type="text" id="ret-event-${index}" placeholder="Event Name">
+                            <input type="text" id="ret-loc-${index}" placeholder="Location">
+                            <input type="date" id="ret-date-${index}" title="Return Date">
                             <p style="font-size: 0.8rem; color: var(--accent)">Upload photo of headset condition:</p>
                             <input type="file" id="photo-${index}" accept="image/*">
                             <button class="btn-submit" onclick="submitReturn(${index}, '${item.id}', '${item.model}')">Confirm Return</button>
@@ -82,26 +87,31 @@
             const person = document.getElementById(`name-${index}`).value;
             const email = document.getElementById(`email-${index}`).value;
             const event = document.getElementById(`event-${index}`).value;
+            const loc = document.getElementById(`loc-${index}`).value;
             const returnDate = document.getElementById(`date-${index}`).value;
-            if (!person || !email || !event || !returnDate) { alert("Please fill in all fields"); return; }
+            if (!person || !email || !event || !loc || !returnDate) { alert("Please fill in all fields"); return; }
             showLoading("Processing Checkout...");
-            await sendToBridge({ type: 'checkout', deviceId, model, person, email, event, returnDate });
+            await sendToBridge({ type: 'checkout', deviceId, model, person, email, event, location: loc, returnDate });
         }
         async function submitReturn(index, deviceId, model) {
+            const person = document.getElementById(`ret-name-${index}`).value;
             const email = document.getElementById(`ret-email-${index}`).value;
+            const event = document.getElementById(`ret-event-${index}`).value;
+            const loc = document.getElementById(`ret-loc-${index}`).value;
+            const date = document.getElementById(`ret-date-${index}`).value;
             const photoFile = document.getElementById(`photo-${index}`).files[0];
-            if (!email || !photoFile) { alert("Please provide your email and a photo."); return; }
+            if (!person || !email || !event || !loc || !date || !photoFile) { alert("Please fill in all fields and provide a photo."); return; }
             showLoading("Processing Return...");
             const reader = new FileReader();
             reader.onload = async function() {
-                await sendToBridge({ type: 'return', deviceId, model, email, photo: reader.result.split(',')[1], photoName: `return_${deviceId}.jpg` });
+                await sendToBridge({ type: 'return', deviceId, model, person, email, event, location: loc, date, photo: reader.result.split(',')[1], photoName: `return_${deviceId}.jpg` });
             };
             reader.readAsDataURL(photoFile);
         }
         async function sendToBridge(payload) {
             try {
                 await fetch(BRIDGE_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-                alert("Success! Check your email. The dashboard will update in 60 seconds.");
+                alert("Success! The dashboard will update in about 60 seconds.");
                 location.reload();
             } catch (error) { alert("Submission failed. Check connection."); } finally { hideLoading(); }
         }
