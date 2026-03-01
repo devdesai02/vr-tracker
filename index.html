@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VR Tracker Dashboard <span style="font-size: 0.8rem;">v2.5</span></title>
+    <title>VR Tracker Dashboard <span style="font-size: 0.8rem;">v2.6</span></title>
     <style>
         :root { --bg: #0f172a; --card-bg: #1e293b; --text: #f8fafc; --accent: #38bdf8; --available: #22c55e; --not-available: #ef4444; }
         body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); padding: 2rem; display: flex; flex-direction: column; align-items: center; }
@@ -22,7 +22,7 @@
 </head>
 <body>
     <div id="loading-overlay"><h2 id="loading-text" style="color: var(--accent)">Processing...</h2></div>
-    <h1>VR Tracker Dashboard <span style="font-size: 0.8rem;">v2.5</span></h1>
+    <h1>VR Tracker Dashboard <span style="font-size: 0.8rem;">v2.6</span></h1>
     <div class="grid" id="inventory-grid"></div>
     <script>
         const BRIDGE_URL = "https://script.google.com/macros/s/AKfycbw7SVo-cVwTQewqd2B7cI15uYcG4YB6aKxM-76_iM7vWeTmXU49h8GviP44DSQ4-M-Y/exec";
@@ -52,7 +52,7 @@
                             <button class="btn-submit" onclick="submitCheckout(${index}, '${item.id}', '${item.model}')">Confirm Checkout</button>
                         </div>
                     ` : `
-                        <button class="btn-submit" onclick="submitReturn(${index}, '${item.id}', '${item.model}')">Return (Photo Only)</button>
+                        <button class="btn-submit" onclick="submitReturn(${index}, '${item.id}', '${item.model}')">Return Device</button>
                         <div id="return-${index}" class="form-group" style="display:block">
                             <input type="file" id="photo-${index}" accept="image/*">
                         </div>
@@ -75,19 +75,20 @@
                 await fetch(BRIDGE_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'checkout', deviceId, model, person, email, event, location: loc, startDate, endDate }) });
                 alert("Success! Check email.");
                 location.reload();
-            } catch (e) { alert("Error connecting to Bridge."); }
+            } catch (e) { alert("Error."); }
         }
         async function submitReturn(index, deviceId, model) {
-            const photoFile = document.getElementById(`photo-${index}`).files[0];
+            const fileInput = document.getElementById(`photo-${index}`);
+            const photoFile = fileInput.files[0];
             if (!photoFile) { alert("Upload photo"); return; }
+            
             const reader = new FileReader();
             reader.onload = async function() {
                 document.getElementById('loading-overlay').style.display = 'flex';
                 try {
-                    // Send original mime type and cleaner base64
-                    const result = reader.result;
-                    const base64 = result.split(',')[1];
-                    const mimeType = result.split(',')[0].split(':')[1].split(';')[0];
+                    const base64 = reader.result.split(',')[1];
+                    const mimeType = photoFile.type;
+                    const fileName = photoFile.name; // Use original filename
                     
                     await fetch(BRIDGE_URL, { 
                         method: 'POST', 
@@ -98,7 +99,7 @@
                             model, 
                             photo: base64, 
                             mimeType: mimeType,
-                            fileName: `return_${deviceId}_${Date.now()}` 
+                            fileName: fileName 
                         }) 
                     });
                     alert("Returned! Check email.");
