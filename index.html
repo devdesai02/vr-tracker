@@ -28,7 +28,7 @@
     <p style="color: #94a3b8; margin-bottom: 2rem;">Manage your VR fleet lifecycle</p>
     <div class="grid" id="inventory-grid"></div>
     <script>
-        const BRIDGE_URL = "https://script.google.com/macros/s/AKfycbytyaQlL7c4k-9rvhJDJT7vG4QzWvlz5kM1EnUcBahcc9d-maXrdYk_YWNV2sZ7iR4W/exec";
+        const BRIDGE_URL = "https://script.google.com/macros/s/AKfycbw7SVo-cVwTQewqd2B7cI15uYcG4YB6aKxM-76_iM7vWeTmXU49h8GviP44DSQ4-M-Y/exec";
         async function loadInventory() {
             const response = await fetch(`vr_inventory.json?t=${Date.now()}`);
             const data = await response.json();
