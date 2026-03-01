@@ -133,4 +133,10 @@ def process_emails():
         print(f"Error: {e}")
 
 if __name__ == "__main__":
-    process_emails()
+    import time
+    # Check every 60 seconds for 5 minutes (Total 5 checks)
+    for _ in range(5):
+        print(f"Checking for requests at {datetime.now().strftime('%H:%M:%S')}...")
+        process_emails()
+        time.sleep(60)
+

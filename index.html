@@ -43,17 +43,16 @@
 <body>
 
     <div id="loading-overlay">
-        <h2 style="color: var(--accent)">Processing Selection...</h2>
-        <p>Sending confirmation email from desaidev2423@gmail.com</p>
+        <h2 style="color: var(--accent)">Processing Request...</h2>
+        <p>Updating inventory and sending confirmation.</p>
     </div>
 
     <h1>VR Equipment Tracker</h1>
-    <p style="color: #94a3b8; margin-bottom: 2rem;">Select a headset to receive an automated confirmation email</p>
+    <p style="color: #94a3b8; margin-bottom: 2rem;">Manage your VR fleet with one click</p>
 
     <div class="grid" id="inventory-grid"></div>
 
     <script>
-        // REPLACE THIS URL after you deploy your Google Apps Script
         const BRIDGE_URL = "https://script.google.com/macros/s/AKfycbzH5nY6JctezyrNsrsFIX1Nc8nvYZgUhFDF4yyHS5wz5L11RPLF0SEQOYL2Pft-G4A/exec";
 
         async function loadInventory() {
@@ -70,18 +69,18 @@
                 
                 card.innerHTML = `
                     <div class="status-badge ${isAvail ? 'status-available' : 'status-not-available'}">${item.status}</div>
-                    <div style="font-family: monospace; color: var(--accent); font-weight: bold;">${item.id}</div>
+                    <div style="font-family: monospace; color: var(--accent)">${item.id}</div>
                     <h3 style="margin: 0.5rem 0">${item.model}</h3>
                     
                     ${isAvail ? `
                         <button class="btn-checkout" onclick="toggleForm(${index})">Select Device</button>
                         <div id="form-${index}" class="form-group">
                             <input type="text" id="person-${index}" placeholder="Your Name">
-                            <input type="email" id="email-${index}" placeholder="Your Email (to receive confirmation)">
+                            <input type="email" id="email-${index}" placeholder="Your Email">
                             <input type="text" id="event-${index}" placeholder="Event Name">
                             <input type="text" id="loc-${index}" placeholder="Location">
-                            <input type="text" id="date-${index}" placeholder="Date Required (DD/MM/YYYY)">
-                            <button class="btn-submit" onclick="submitSelection(${index}, '${item.id}', '${item.model}')">Confirm Selection</button>
+                            <input type="text" id="date-${index}" placeholder="Date (DD/MM/YYYY)">
+                            <button class="btn-submit" onclick="submitToBridge(${index}, '${item.id}', '${item.model}')">Confirm Selection</button>
                         </div>
                     ` : ''}
 
@@ -98,31 +97,29 @@
             form.style.display = form.style.display === 'block' ? 'none' : 'block';
         }
 
-        async function submitSelection(index, deviceId, model) {
+        async function submitToBridge(index, deviceId, model) {
             const person = document.getElementById(`person-${index}`).value;
-            const userEmail = document.getElementById(`email-${index}`).value;
-            const event = document.getElementById(`event-${index}`).value;
-            const loc = document.getElementById(`loc-${index}`).value;
-            const date = document.getElementById(`date-${index}`).value;
+            const email = document.getElementById(`email-${index}`).value;
+            const event = document.getElementById('event-' + index).value;
+            const loc = document.getElementById('loc-' + index).value;
+            const date = document.getElementById('date-' + index).value;
 
-            if (!person || !userEmail || !event || !loc || !date) { alert("Please fill in all fields"); return; }
-            if (BRIDGE_URL === "PASTE_YOUR_GOOGLE_SCRIPT_URL_HERE") { alert("Please wait while Dev completes the setup!"); return; }
+            if (!person || !email || !event || !loc || !date) { alert("Please fill in all fields"); return; }
 
             document.getElementById('loading-overlay').style.display = 'flex';
 
             try {
-                // Sending data to the Google Apps Script Bridge
                 await fetch(BRIDGE_URL, {
                     method: 'POST',
-                    mode: 'no-cors', 
-                    body: JSON.stringify({ deviceId, model, person, userEmail, event, location: loc, date })
+                    mode: 'no-cors',
+                    body: JSON.stringify({ deviceId, model, person, userEmail: email, event, location: loc, date })
                 });
 
-                alert("Success! Check your email for a confirmation from desaidev2423@gmail.com.");
+                alert("Success! Your selection has been confirmed and a receipt has been sent to your email.");
                 location.reload();
             } catch (error) {
                 console.error(error);
-                alert("Error sending request. Please try again later.");
+                alert("Error processing request. Please try again later.");
             } finally {
                 document.getElementById('loading-overlay').style.display = 'none';
             }
