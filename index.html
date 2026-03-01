@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VR Equipment Tracker</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text: #f8fafc;
+            --accent: #38bdf8;
+            --available: #22c55e;
+            --in-use: #f59e0b;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        p.subtitle {
+            color: #94a3b8;
+            margin-bottom: 2rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid #334155;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+        }
+
+        .status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 99px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+
+        .status.available { background: #14532d; color: #4ade80; }
+        .status.in-use { background: #78350f; color: #fbbf24; }
+
+        .device-id {
+            font-family: monospace;
+            color: var(--accent);
+            font-size: 0.9rem;
+        }
+
+        .last-update {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>VR Equipment Tracker</h1>
+    <p class="subtitle">Live status of our virtual reality fleet</p>
+
+    <div class="grid" id="inventory-grid">
+        <!-- Cards will be loaded here -->
+        <p>Loading inventory...</p>
+    </div>
+
+    <script>
+        async function loadInventory() {
+            try {
+                // In a real GitHub Pages setup, we fetch the JSON file from the repo
+                const response = await fetch('vr_inventory.json');
+                const data = await response.json();
+                
+                const grid = document.getElementById('inventory-grid');
+                grid.innerHTML = '';
+
+                data.forEach(item => {
+                    if (item.id) { // Only show actual devices, not log entries
+                        const card = document.createElement('div');
+                        card.className = 'card';
+                        const statusClass = item.status.toLowerCase().replace(' ', '-');
+                        
+                        card.innerHTML = `
+                            <div class="device-id">${item.id}</div>
+                            <h3>${item.model}</h3>
+                            <div class="status ${statusClass}">${item.status}</div>
+                            <div class="last-update">Last Event: ${item.last_event}</div>
+                        `;
+                        grid.appendChild(card);
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading inventory:', error);
+                document.getElementById('inventory-grid').innerHTML = '<p>Error loading data. Make sure vr_inventory.json is available.</p>';
+            }
+        }
+
+        loadInventory();
+        // Refresh every 5 minutes
+        setInterval(loadInventory, 300000);
+    </script>
+</body>
+</html>
