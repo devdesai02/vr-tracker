@@ -24,37 +24,28 @@
 
         h1 { color: var(--accent); margin-bottom: 0.5rem; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; width: 100%; max-width: 1100px; }
-        .card { background: var(--card-bg); padding: 1.5rem; border-radius: 12px; border: 1px solid #334155; }
+        .card { background: var(--card-bg); padding: 1.5rem; border-radius: 12px; border: 1px solid #334155; position: relative; }
         
         .status-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 99px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; margin-bottom: 1rem; }
         .status-available { background: #14532d; color: #4ade80; }
         .status-not-available { background: #7f1d1d; color: #fca5a5; }
 
-        .form-group { margin-top: 1rem; display: none; background: #0f172a; padding: 1rem; border-radius: 8px; }
-        input { width: 100%; padding: 0.5rem; margin: 0.3rem 0; background: #1e293b; border: 1px solid #475569; color: white; border-radius: 4px; box-sizing: border-box; }
-        button { width: 100%; padding: 0.6rem; margin-top: 1rem; cursor: pointer; border: none; border-radius: 6px; font-weight: 600; }
+        .form-group { margin-top: 1rem; display: none; background: #0f172a; padding: 1rem; border-radius: 8px; border: 1px solid var(--accent); }
+        input { width: 100%; padding: 0.6rem; margin: 0.4rem 0; background: #1e293b; border: 1px solid #475569; color: white; border-radius: 4px; box-sizing: border-box; }
+        
+        button { width: 100%; padding: 0.8rem; margin-top: 1rem; cursor: pointer; border: none; border-radius: 6px; font-weight: 700; }
         .btn-checkout { background: var(--accent); color: #0f172a; }
         .btn-submit { background: var(--available); color: #0f172a; }
-
-        #loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; }
     </style>
 </head>
 <body>
 
-    <div id="loading-overlay">
-        <h2 style="color: var(--accent)">Triggering GitHub Action...</h2>
-        <p>The update will take about 60 seconds to process.</p>
-    </div>
-
     <h1>VR Equipment Tracker</h1>
-    <p style="color: #94a3b8; margin-bottom: 2rem;">Manage your VR fleet with one click</p>
+    <p style="color: #94a3b8; margin-bottom: 2rem;">Select a headset to confirm your selection</p>
 
     <div class="grid" id="inventory-grid"></div>
 
     <script>
-        const REPO_OWNER = "devdesai02";
-        const REPO_NAME = "vr-tracker";
-
         async function loadInventory() {
             const response = await fetch(`vr_inventory.json?t=${Date.now()}`);
             const data = await response.json();
@@ -73,18 +64,18 @@
                     <h3 style="margin: 0.5rem 0">${item.model}</h3>
                     
                     ${isAvail ? `
-                        <button class="btn-checkout" onclick="toggleForm(${index})">Check Out</button>
+                        <button class="btn-checkout" onclick="toggleForm(${index})">Select this Device</button>
                         <div id="form-${index}" class="form-group">
                             <input type="text" id="person-${index}" placeholder="Your Name">
                             <input type="text" id="event-${index}" placeholder="Event Name">
                             <input type="text" id="loc-${index}" placeholder="Location">
-                            <input type="password" id="token-${index}" placeholder="Enter GitHub Token (ghp_...)">
-                            <button class="btn-submit" onclick="triggerAction(${index}, '${item.id}')">Confirm Update</button>
+                            <input type="text" id="date-${index}" placeholder="Date (DD/MM/YYYY)">
+                            <button class="btn-submit" onclick="sendFinalEmail(${index}, '${item.id}', '${item.model}')">Confirm Selection</button>
                         </div>
                     ` : ''}
 
                     <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 1rem; border-top: 1px solid #334155; padding-top: 0.5rem;">
-                        <strong>Current Status:</strong> ${item.last_event || 'None'}
+                        <strong>Current Status:</strong> ${item.last_event || 'Available'}
                     </div>
                 `;
                 grid.appendChild(card);
@@ -96,49 +87,29 @@
             form.style.display = form.style.display === 'block' ? 'none' : 'block';
         }
 
-        async function triggerAction(index, deviceId) {
+        function sendFinalEmail(index, deviceId, model) {
             const person = document.getElementById(`person-${index}`).value;
             const event = document.getElementById(`event-${index}`).value;
             const loc = document.getElementById(`loc-${index}`).value;
-            const token = document.getElementById(`token-${index}`).value;
+            const date = document.getElementById(`date-${index}`).value;
 
-            if (!person || !event || !loc || !token) { alert("Please fill in ALL fields, including your GitHub Token."); return; }
-            
-            document.getElementById('loading-overlay').style.display = 'flex';
+            if (!person || !event || !loc || !date) { alert("Please fill in all fields"); return; }
 
-            try {
-                const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/dispatches`;
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `token ${token}`,
-                        'Accept': 'application/vnd.github.v3+json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        event_type: 'check-out',
-                        client_payload: {
-                            device_id: deviceId,
-                            person: person,
-                            event: event,
-                            location: loc
-                        }
-                    })
-                });
+            const to = "desaidev2423@gmail.com";
+            const cc = "devdesai242003@gmail.com";
+            const subject = encodeURIComponent(`Selection Confirmed: ${model} (${deviceId})`);
+            const body = encodeURIComponent(
+                `Hi Dev,\n\nI have selected the following VR headset from the tracker:\n\n` +
+                `Selected Device: ${model} (${deviceId})\n` +
+                `Name: ${person}\n` +
+                `Event: ${event}\n` +
+                `Location: ${loc}\n` +
+                `Date: ${date}\n\n` +
+                `Please update the tracker status. Thank you!`
+            );
 
-                if (response.ok || response.status === 204) {
-                    alert("Update triggered! The website will update automatically in about 1 minute.");
-                    setTimeout(() => location.reload(), 2000);
-                } else {
-                    const err = await response.json();
-                    throw new Error(err.message || "Failed to trigger update.");
-                }
-            } catch (error) {
-                console.error(error);
-                alert("Error: " + error.message);
-            } finally {
-                document.getElementById('loading-overlay').style.display = 'none';
-            }
+            window.location.href = `mailto:${to}?cc=${cc}&subject=${subject}&body=${body}`;
+            alert("Selection confirmed! Please click 'Send' in your email client to notify Dev.");
         }
 
         loadInventory();

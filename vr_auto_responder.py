@@ -16,8 +16,10 @@ REPLY_BODY = """Hi,
 
 Thanks for your request! We have received your inquiry regarding the VR headset for your event.
 
-You can track our current device availability and updates here:
-https://your-tracking-website.com/v1/status
+A copy of this request has been sent to devdesai242003@gmail.com for tracking.
+
+You can view the updated device status here:
+https://devdesai02.github.io/vr-tracker/
 
 Our team will follow up with you shortly.
 
