@@ -33,19 +33,29 @@
         .form-group { margin-top: 1rem; display: none; background: #0f172a; padding: 1rem; border-radius: 8px; border: 1px solid var(--accent); }
         input { width: 100%; padding: 0.6rem; margin: 0.4rem 0; background: #1e293b; border: 1px solid #475569; color: white; border-radius: 4px; box-sizing: border-box; }
         
-        button { width: 100%; padding: 0.8rem; margin-top: 1rem; cursor: pointer; border: none; border-radius: 6px; font-weight: 700; }
+        button { width: 100%; padding: 0.8rem; margin-top: 1rem; cursor: pointer; border: none; border-radius: 6px; font-weight: 700; transition: opacity 0.2s; }
         .btn-checkout { background: var(--accent); color: #0f172a; }
         .btn-submit { background: var(--available); color: #0f172a; }
+
+        #loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; }
     </style>
 </head>
 <body>
 
+    <div id="loading-overlay">
+        <h2 style="color: var(--accent)">Processing Selection...</h2>
+        <p>Sending confirmation email from desaidev2423@gmail.com</p>
+    </div>
+
     <h1>VR Equipment Tracker</h1>
-    <p style="color: #94a3b8; margin-bottom: 2rem;">Select a headset to confirm your selection</p>
+    <p style="color: #94a3b8; margin-bottom: 2rem;">Select a headset to receive an automated confirmation email</p>
 
     <div class="grid" id="inventory-grid"></div>
 
     <script>
+        // REPLACE THIS URL after you deploy your Google Apps Script
+        const BRIDGE_URL = "PASTE_YOUR_GOOGLE_SCRIPT_URL_HERE";
+
         async function loadInventory() {
             const response = await fetch(`vr_inventory.json?t=${Date.now()}`);
             const data = await response.json();
@@ -60,17 +70,18 @@
                 
                 card.innerHTML = `
                     <div class="status-badge ${isAvail ? 'status-available' : 'status-not-available'}">${item.status}</div>
-                    <div style="font-family: monospace; color: var(--accent)">${item.id}</div>
+                    <div style="font-family: monospace; color: var(--accent); font-weight: bold;">${item.id}</div>
                     <h3 style="margin: 0.5rem 0">${item.model}</h3>
                     
                     ${isAvail ? `
-                        <button class="btn-checkout" onclick="toggleForm(${index})">Select this Device</button>
+                        <button class="btn-checkout" onclick="toggleForm(${index})">Select Device</button>
                         <div id="form-${index}" class="form-group">
                             <input type="text" id="person-${index}" placeholder="Your Name">
+                            <input type="email" id="email-${index}" placeholder="Your Email (to receive confirmation)">
                             <input type="text" id="event-${index}" placeholder="Event Name">
                             <input type="text" id="loc-${index}" placeholder="Location">
-                            <input type="text" id="date-${index}" placeholder="Date (DD/MM/YYYY)">
-                            <button class="btn-submit" onclick="sendFinalEmail(${index}, '${item.id}', '${item.model}')">Confirm Selection</button>
+                            <input type="text" id="date-${index}" placeholder="Date Required (DD/MM/YYYY)">
+                            <button class="btn-submit" onclick="submitSelection(${index}, '${item.id}', '${item.model}')">Confirm Selection</button>
                         </div>
                     ` : ''}
 
@@ -87,29 +98,34 @@
             form.style.display = form.style.display === 'block' ? 'none' : 'block';
         }
 
-        function sendFinalEmail(index, deviceId, model) {
+        async function submitSelection(index, deviceId, model) {
             const person = document.getElementById(`person-${index}`).value;
+            const userEmail = document.getElementById(`email-${index}`).value;
             const event = document.getElementById(`event-${index}`).value;
             const loc = document.getElementById(`loc-${index}`).value;
             const date = document.getElementById(`date-${index}`).value;
 
-            if (!person || !event || !loc || !date) { alert("Please fill in all fields"); return; }
+            if (!person || !userEmail || !event || !loc || !date) { alert("Please fill in all fields"); return; }
+            if (BRIDGE_URL === "PASTE_YOUR_GOOGLE_SCRIPT_URL_HERE") { alert("Please wait while Dev completes the setup!"); return; }
 
-            const to = "desaidev2423@gmail.com";
-            const cc = "devdesai242003@gmail.com";
-            const subject = encodeURIComponent(`Selection Confirmed: ${model} (${deviceId})`);
-            const body = encodeURIComponent(
-                `Hi Dev,\n\nI have selected the following VR headset from the tracker:\n\n` +
-                `Selected Device: ${model} (${deviceId})\n` +
-                `Name: ${person}\n` +
-                `Event: ${event}\n` +
-                `Location: ${loc}\n` +
-                `Date: ${date}\n\n` +
-                `Please update the tracker status. Thank you!`
-            );
+            document.getElementById('loading-overlay').style.display = 'flex';
 
-            window.location.href = `mailto:${to}?cc=${cc}&subject=${subject}&body=${body}`;
-            alert("Selection confirmed! Please click 'Send' in your email client to notify Dev.");
+            try {
+                // Sending data to the Google Apps Script Bridge
+                await fetch(BRIDGE_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', 
+                    body: JSON.stringify({ deviceId, model, person, userEmail, event, location: loc, date })
+                });
+
+                alert("Success! Check your email for a confirmation from desaidev2423@gmail.com.");
+                location.reload();
+            } catch (error) {
+                console.error(error);
+                alert("Error sending request. Please try again later.");
+            } finally {
+                document.getElementById('loading-overlay').style.display = 'none';
+            }
         }
 
         loadInventory();
