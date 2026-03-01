@@ -3,9 +3,12 @@
     "id": "VR-001",
     "model": "Meta Quest 3",
     "status": "Not Available",
-    "last_event": "Automated System Test",
-    "borrower_name": "",
-    "borrower_email": ""
+    "last_event": "Automated System Test (2024-03-07 to 2024-03-10)",
+    "borrower_name": "Gemini Test Bot",
+    "borrower_email": "desaidev2423@gmail.com",
+    "event_name": "Automated System Test",
+    "start_date": "2024-03-07",
+    "end_date": "2024-03-10"
   },
   {
     "id": "VR-002",
