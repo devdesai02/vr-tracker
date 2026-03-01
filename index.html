@@ -43,7 +43,7 @@
 <body>
 
     <div id="loading-overlay">
-        <h2 id="loading-text" style="color: var(--accent)">Processing Request...</h2>
+        <h2 id="loading-text" style="color: var(--accent)">Processing...</h2>
         <p>Updating inventory and syncing data.</p>
     </div>
 
@@ -51,6 +51,8 @@
     <p style="color: #94a3b8; margin-bottom: 2rem;">Manage your VR fleet lifecycle</p>
 
     <div class="grid" id="inventory-grid"></div>
+
+    <button onclick="location.reload(true)" style="margin-top: 3rem; background: transparent; color: #64748b; border: 1px solid #334155; width: auto; padding: 0.5rem 1rem;">Force Refresh Dashboard</button>
 
     <script>
         const BRIDGE_URL = "https://script.google.com/macros/s/AKfycbzH5nY6JctezyrNsrsFIX1Nc8nvYZgUhFDF4yyHS5wz5L11RPLF0SEQOYL2Pft-G4A/exec";
@@ -65,10 +67,15 @@
                 if (!item.id) return;
                 const card = document.createElement('div');
                 card.className = 'card';
-                const isAvail = item.status === 'Available';
+                
+                // FIX: Case-insensitive and trimmed status check
+                const statusStr = (item.status || "").trim().toLowerCase();
+                const isAvail = statusStr === 'available';
                 
                 card.innerHTML = `
-                    <div class="status-badge ${isAvail ? 'status-available' : 'status-not-available'}">${item.status}</div>
+                    <div class="status-badge ${isAvail ? 'status-available' : 'status-not-available'}">
+                        ${item.status}
+                    </div>
                     <div style="font-family: monospace; color: var(--accent); font-weight: bold;">${item.id}</div>
                     <h3 style="margin: 0.5rem 0">${item.model}</h3>
                     
@@ -140,8 +147,7 @@
 
         async function sendToBridge(payload) {
             try {
-                // Using mode: 'no-cors' since Google Apps Script redirects.
-                // Note: The browser won't be able to read the response content, but the action will trigger.
+                // We use fetch with 'no-cors' to prevent redirect blocks.
                 await fetch(BRIDGE_URL, {
                     method: 'POST',
                     mode: 'no-cors',
@@ -150,11 +156,11 @@
                     body: JSON.stringify(payload)
                 });
                 
-                alert("Success! Your request has been sent for processing. The tracker will update in about 60 seconds.");
-                location.reload();
+                alert("Request Submitted! The tracker will update in about 60 seconds. Please check your email for confirmation.");
+                setTimeout(() => location.reload(), 2000);
             } catch (error) {
                 console.error(error);
-                alert("Request Sent! Check your email for confirmation shortly.");
+                alert("Submission failed. Please try again.");
             } finally {
                 hideLoading();
             }
