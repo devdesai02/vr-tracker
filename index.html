@@ -12,6 +12,7 @@
             --accent: #38bdf8;
             --available: #22c55e;
             --in-use: #f59e0b;
+            --not-available: #ef4444;
         }
 
         body {
@@ -25,22 +26,15 @@
             align-items: center;
         }
 
-        h1 {
-            color: var(--accent);
-            margin-bottom: 0.5rem;
-        }
-
-        p.subtitle {
-            color: #94a3b8;
-            margin-bottom: 2rem;
-        }
+        h1 { color: var(--accent); margin-bottom: 0.5rem; }
+        p.subtitle { color: #94a3b8; margin-bottom: 2rem; }
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 1.5rem;
             width: 100%;
-            max-width: 1000px;
+            max-width: 1100px;
         }
 
         .card {
@@ -48,84 +42,113 @@
             padding: 1.5rem;
             border-radius: 12px;
             border: 1px solid #334155;
-            transition: transform 0.2s;
+            position: relative;
+            transition: all 0.2s;
         }
 
-        .card:hover {
-            transform: translateY(-5px);
-            border-color: var(--accent);
-        }
-
-        .status {
+        .status-badge {
             display: inline-block;
             padding: 0.25rem 0.75rem;
             border-radius: 99px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            margin-top: 1rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
         }
 
-        .status.available { background: #14532d; color: #4ade80; }
-        .status.in-use { background: #78350f; color: #fbbf24; }
-        .status.not-available { background: #7f1d1d; color: #fca5a5; }
+        .status-available { background: #14532d; color: #4ade80; }
+        .status-not-available { background: #7f1d1d; color: #fca5a5; }
 
-        .device-id {
-            font-family: monospace;
-            color: var(--accent);
-            font-size: 0.9rem;
+        .form-group { margin-top: 1rem; display: none; background: #0f172a; padding: 1rem; border-radius: 8px; }
+        input { 
+            width: 100%; padding: 0.5rem; margin: 0.3rem 0; 
+            background: #1e293b; border: 1px solid #475569; color: white; border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        button {
+            width: 100%; padding: 0.6rem; margin-top: 1rem;
+            cursor: pointer; border: none; border-radius: 6px; font-weight: 600;
         }
 
-        .last-update {
-            font-size: 0.75rem;
-            color: #64748b;
-            margin-top: 1rem;
-        }
+        .btn-checkout { background: var(--accent); color: #0f172a; }
+        .btn-submit { background: var(--available); color: #0f172a; }
+
+        .last-event-info { font-size: 0.8rem; color: #94a3b8; margin-top: 1rem; border-top: 1px solid #334155; padding-top: 0.5rem; }
     </style>
 </head>
 <body>
 
     <h1>VR Equipment Tracker</h1>
-    <p class="subtitle">Live status of our virtual reality fleet</p>
+    <p class="subtitle">Select a headset to check it out for an event</p>
 
-    <div class="grid" id="inventory-grid">
-        <!-- Cards will be loaded here -->
-        <p>Loading inventory...</p>
-    </div>
+    <div class="grid" id="inventory-grid"></div>
 
     <script>
         async function loadInventory() {
-            try {
-                // Fetch the JSON file with a timestamp to bypass browser cache
-                const response = await fetch(`vr_inventory.json?t=${Date.now()}`);
-                const data = await response.json();
-                
-                const grid = document.getElementById('inventory-grid');
-                grid.innerHTML = '';
+            const response = await fetch(`vr_inventory.json?t=${Date.now()}`);
+            const data = await response.json();
+            const grid = document.getElementById('inventory-grid');
+            grid.innerHTML = '';
 
-                data.forEach(item => {
-                    if (item.id) { // Only show actual devices, not log entries
-                        const card = document.createElement('div');
-                        card.className = 'card';
-                        const statusClass = item.status.toLowerCase().replace(' ', '-');
-                        
-                        card.innerHTML = `
-                            <div class="device-id">${item.id}</div>
-                            <h3>${item.model}</h3>
-                            <div class="status ${statusClass}">${item.status}</div>
-                            <div class="last-update">Last Event: ${item.last_event}</div>
-                        `;
-                        grid.appendChild(card);
-                    }
-                });
-            } catch (error) {
-                console.error('Error loading inventory:', error);
-                document.getElementById('inventory-grid').innerHTML = '<p>Error loading data. Make sure vr_inventory.json is available.</p>';
+            data.forEach((item, index) => {
+                if (!item.id) return;
+                
+                const card = document.createElement('div');
+                card.className = 'card';
+                const isAvail = item.status === 'Available';
+                
+                card.innerHTML = `
+                    <div class="status-badge ${isAvail ? 'status-available' : 'status-not-available'}">
+                        ${item.status}
+                    </div>
+                    <div style="font-family: monospace; color: var(--accent)">${item.id}</div>
+                    <h3 style="margin: 0.5rem 0">${item.model}</h3>
+                    
+                    ${isAvail ? `
+                        <button class="btn-checkout" onclick="toggleForm(${index})">Check Out</button>
+                        <div id="form-${index}" class="form-group">
+                            <input type="text" id="person-${index}" placeholder="Your Name">
+                            <input type="text" id="event-${index}" placeholder="Event Name">
+                            <input type="text" id="loc-${index}" placeholder="Location">
+                            <button class="btn-submit" onclick="submitUpdate(${index}, '${item.id}')">Confirm Update</button>
+                        </div>
+                    ` : ''}
+
+                    <div class="last-event-info">
+                        <strong>Last/Current Event:</strong><br>
+                        ${item.last_event || 'None'}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function toggleForm(index) {
+            const form = document.getElementById(`form-${index}`);
+            form.style.display = form.style.display === 'block' ? 'none' : 'block';
+        }
+
+        async function submitUpdate(index, id) {
+            const person = document.getElementById(`person-${index}`).value;
+            const event = document.getElementById(`event-${index}`).value;
+            const loc = document.getElementById(`loc-${index}`).value;
+
+            if (!person || !event || !loc) {
+                alert("Please fill in all fields");
+                return;
             }
+
+            const updateInfo = { id, person, event, loc };
+            
+            // Note: In a static GitHub Pages site, we can't run Python directly from the browser.
+            // You will need to run the update command in your terminal.
+            
+            console.log("Update requested:", updateInfo);
+            alert(`To confirm, run this in your terminal:\npython3 update_vr.py "${id}" "${person}" "${event}" "${loc}"`);
         }
 
         loadInventory();
-        // Refresh every 5 minutes
-        setInterval(loadInventory, 300000);
     </script>
 </body>
 </html>
