@@ -11,7 +11,6 @@
             --text: #f8fafc;
             --accent: #38bdf8;
             --available: #22c55e;
-            --in-use: #f59e0b;
             --not-available: #ef4444;
         }
 
@@ -19,72 +18,43 @@
             font-family: 'Segoe UI', system-ui, sans-serif;
             background-color: var(--bg);
             color: var(--text);
-            margin: 0;
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            margin: 0; padding: 2rem;
+            display: flex; flex-direction: column; align-items: center;
         }
 
         h1 { color: var(--accent); margin-bottom: 0.5rem; }
-        p.subtitle { color: #94a3b8; margin-bottom: 2rem; }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 1.5rem;
-            width: 100%;
-            max-width: 1100px;
-        }
-
-        .card {
-            background: var(--card-bg);
-            padding: 1.5rem;
-            border-radius: 12px;
-            border: 1px solid #334155;
-            position: relative;
-            transition: all 0.2s;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 99px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            margin-bottom: 1rem;
-        }
-
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; width: 100%; max-width: 1100px; }
+        .card { background: var(--card-bg); padding: 1.5rem; border-radius: 12px; border: 1px solid #334155; }
+        
+        .status-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 99px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; margin-bottom: 1rem; }
         .status-available { background: #14532d; color: #4ade80; }
         .status-not-available { background: #7f1d1d; color: #fca5a5; }
 
         .form-group { margin-top: 1rem; display: none; background: #0f172a; padding: 1rem; border-radius: 8px; }
-        input { 
-            width: 100%; padding: 0.5rem; margin: 0.3rem 0; 
-            background: #1e293b; border: 1px solid #475569; color: white; border-radius: 4px;
-            box-sizing: border-box;
-        }
-        
-        button {
-            width: 100%; padding: 0.6rem; margin-top: 1rem;
-            cursor: pointer; border: none; border-radius: 6px; font-weight: 600;
-        }
-
+        input { width: 100%; padding: 0.5rem; margin: 0.3rem 0; background: #1e293b; border: 1px solid #475569; color: white; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 0.6rem; margin-top: 1rem; cursor: pointer; border: none; border-radius: 6px; font-weight: 600; }
         .btn-checkout { background: var(--accent); color: #0f172a; }
         .btn-submit { background: var(--available); color: #0f172a; }
 
-        .last-event-info { font-size: 0.8rem; color: #94a3b8; margin-top: 1rem; border-top: 1px solid #334155; padding-top: 0.5rem; }
+        #loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; }
     </style>
 </head>
 <body>
 
+    <div id="loading-overlay">
+        <h2 style="color: var(--accent)">Triggering GitHub Action...</h2>
+        <p>The update will take about 60 seconds to process.</p>
+    </div>
+
     <h1>VR Equipment Tracker</h1>
-    <p class="subtitle">Select a headset to check it out for an event</p>
+    <p style="color: #94a3b8; margin-bottom: 2rem;">Manage your VR fleet with one click</p>
 
     <div class="grid" id="inventory-grid"></div>
 
     <script>
+        const REPO_OWNER = "devdesai02";
+        const REPO_NAME = "vr-tracker";
+
         async function loadInventory() {
             const response = await fetch(`vr_inventory.json?t=${Date.now()}`);
             const data = await response.json();
@@ -93,15 +63,12 @@
 
             data.forEach((item, index) => {
                 if (!item.id) return;
-                
                 const card = document.createElement('div');
                 card.className = 'card';
                 const isAvail = item.status === 'Available';
                 
                 card.innerHTML = `
-                    <div class="status-badge ${isAvail ? 'status-available' : 'status-not-available'}">
-                        ${item.status}
-                    </div>
+                    <div class="status-badge ${isAvail ? 'status-available' : 'status-not-available'}">${item.status}</div>
                     <div style="font-family: monospace; color: var(--accent)">${item.id}</div>
                     <h3 style="margin: 0.5rem 0">${item.model}</h3>
                     
@@ -111,13 +78,13 @@
                             <input type="text" id="person-${index}" placeholder="Your Name">
                             <input type="text" id="event-${index}" placeholder="Event Name">
                             <input type="text" id="loc-${index}" placeholder="Location">
-                            <button class="btn-submit" onclick="submitUpdate(${index}, '${item.id}')">Confirm Update</button>
+                            <input type="password" id="token-${index}" placeholder="Enter GitHub Token (ghp_...)">
+                            <button class="btn-submit" onclick="triggerAction(${index}, '${item.id}')">Confirm Update</button>
                         </div>
                     ` : ''}
 
-                    <div class="last-event-info">
-                        <strong>Last/Current Event:</strong><br>
-                        ${item.last_event || 'None'}
+                    <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 1rem; border-top: 1px solid #334155; padding-top: 0.5rem;">
+                        <strong>Current Status:</strong> ${item.last_event || 'None'}
                     </div>
                 `;
                 grid.appendChild(card);
@@ -129,23 +96,49 @@
             form.style.display = form.style.display === 'block' ? 'none' : 'block';
         }
 
-        async function submitUpdate(index, id) {
+        async function triggerAction(index, deviceId) {
             const person = document.getElementById(`person-${index}`).value;
             const event = document.getElementById(`event-${index}`).value;
             const loc = document.getElementById(`loc-${index}`).value;
+            const token = document.getElementById(`token-${index}`).value;
 
-            if (!person || !event || !loc) {
-                alert("Please fill in all fields");
-                return;
+            if (!person || !event || !loc || !token) { alert("Please fill in ALL fields, including your GitHub Token."); return; }
+            
+            document.getElementById('loading-overlay').style.display = 'flex';
+
+            try {
+                const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/dispatches`;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        event_type: 'check-out',
+                        client_payload: {
+                            device_id: deviceId,
+                            person: person,
+                            event: event,
+                            location: loc
+                        }
+                    })
+                });
+
+                if (response.ok || response.status === 204) {
+                    alert("Update triggered! The website will update automatically in about 1 minute.");
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    const err = await response.json();
+                    throw new Error(err.message || "Failed to trigger update.");
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Error: " + error.message);
+            } finally {
+                document.getElementById('loading-overlay').style.display = 'none';
             }
-
-            const updateInfo = { id, person, event, loc };
-            
-            // Note: In a static GitHub Pages site, we can't run Python directly from the browser.
-            // You will need to run the update command in your terminal.
-            
-            console.log("Update requested:", updateInfo);
-            alert(`To confirm, run this in your terminal:\npython3 update_vr.py "${id}" "${person}" "${event}" "${loc}"`);
         }
 
         loadInventory();
