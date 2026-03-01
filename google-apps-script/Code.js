@@ -1,5 +1,5 @@
 /**
- * VR Tracker Master Bridge (PRO - V2.4 - THE FINAL EMAIL FIX)
+ * VR Tracker Master Bridge (PRO - V2.5 - PHOTO FIX)
  * Managed by VR Inventory Bot via Clasp
  */
 
@@ -7,15 +7,12 @@ function doPost(e) {
   var data = JSON.parse(e.postData.contents);
   var token = PropertiesService.getScriptProperties().getProperty("GITHUB_TOKEN");
   
-  // THE CORRECT CC ADDRESS
   var CC_ADDRESS = "desaidev242003@gmail.com"; 
-  
   var repo = "devdesai02/vr-tracker";
   var photoFolderId = "1njDIUbohdWyqW5J5_l5nZw2_6K5x7mb-";
   var timestamp = new Date();
   var currentDateStr = Utilities.formatDate(timestamp, "GMT+5:30", "yyyy-MM-dd");
 
-  // 1. Fetch current Inventory from GitHub
   var inventoryUrl = "https://api.github.com/repos/" + repo + "/contents/vr_inventory.json";
   var logUrl = "https://api.github.com/repos/" + repo + "/contents/requests_log.csv";
   
@@ -38,7 +35,7 @@ function doPost(e) {
     inventory.forEach(function(item) {
       if (item.id === data.deviceId) {
         item.status = "Not Available";
-        item.last_event = data.event + " (" + data.startDate + " to " + data.endDate + ")";
+        item.last_event = (data.event || "N/A") + " (" + (data.startDate || "N/A") + " to " + (data.endDate || "N/A") + ")";
         item.borrower_name = targetUserName;
         item.borrower_email = targetUserEmail;
         item.event_name = data.event;
@@ -70,23 +67,31 @@ function doPost(e) {
     if (data.photo) {
       try {
         var folder = DriveApp.getFolderById(photoFolderId);
-        var file = folder.createFile(data.photoName, Utilities.base64Decode(data.photo), MimeType.JPEG);
+        // FIX: Use provided mimeType or default to image/jpeg
+        var mime = data.mimeType || "image/jpeg";
+        var fileName = data.fileName || ("return_" + data.deviceId);
+        
+        // Decoded data to Blob
+        var decodedData = Utilities.base64Decode(data.photo);
+        var blob = Utilities.newBlob(decodedData, mime, fileName);
+        
+        var file = folder.createFile(blob);
+        file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
         photoUrl = file.getUrl();
-      } catch(e) { photoUrl = "Upload Error"; }
+      } catch(e) { photoUrl = "Upload Error: " + e.message; }
     }
 
     var subject = "Return Confirmed: " + data.deviceId;
     var body = "Hi " + (targetUserName || "Borrower") + ",\n\nReturn Confirmed for " + data.model + ".\n\n" +
                "Device: " + data.deviceId + "\nReturned On: " + currentDateStr + "\n" +
-               "Photo: " + photoUrl + "\n\nThank you!";
+               "Condition Photo: " + photoUrl + "\n\n" +
+               "Thank you!";
   }
 
-  // 2. Push to GitHub (CSV & JSON)
   var updatedLogs = logs.trim() + "\n" + [timestamp.toISOString(), targetUserName, targetUserEmail, data.deviceId, data.type.toUpperCase(), photoUrl].join(",");
   UrlFetchApp.fetch(logUrl, { method: "put", headers: { "Authorization": "token " + token }, payload: JSON.stringify({ message: "Bot: Update log", content: Utilities.base64Encode(updatedLogs, Utilities.Charset.UTF_8), sha: logFileData.sha })});
   UrlFetchApp.fetch(inventoryUrl, { method: "put", headers: { "Authorization": "token " + token }, payload: JSON.stringify({ message: "Bot: Update inventory", content: Utilities.base64Encode(JSON.stringify(inventory, null, 2), Utilities.Charset.UTF_8), sha: invFileData.sha })});
 
-  // 3. SEND EMAIL (TO USER, CC YOU)
   if (targetUserEmail) {
     try {
       GmailApp.sendEmail(targetUserEmail, subject, body, { cc: CC_ADDRESS, name: "VR Inventory Bot" });
