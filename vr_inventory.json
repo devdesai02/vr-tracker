@@ -2,10 +2,13 @@
   {
     "id": "VR-001",
     "model": "Meta Quest 3",
-    "status": "Available",
-    "last_event": "None",
-    "borrower_name": "",
-    "borrower_email": ""
+    "status": "Not Available",
+    "last_event": "Cadaver course (2026-03-10 to 2026-03-12)",
+    "borrower_name": "Niyati",
+    "borrower_email": "niyati.rawal@merillife.com",
+    "event_name": "Cadaver course",
+    "start_date": "2026-03-10",
+    "end_date": "2026-03-12"
   },
   {
     "id": "VR-002",
