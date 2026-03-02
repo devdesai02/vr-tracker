@@ -1,8 +1,53 @@
 [
-  {"id": "VR-001", "model": "Meta Quest 3", "status": "Available", "last_event": "None", "borrower_name": "", "borrower_email": ""},
-  {"id": "VR-002", "model": "Meta Quest 3", "status": "Available", "last_event": "None", "borrower_name": "", "borrower_email": ""},
-  {"id": "VR-003", "model": "Meta Quest 3", "status": "Available", "last_event": "None", "borrower_name": "", "borrower_email": ""},
-  {"id": "VR-004", "model": "Meta Quest 3", "status": "Available", "last_event": "None", "borrower_name": "", "borrower_email": ""},
-  {"id": "VR-005", "model": "Meta Quest 3", "status": "Available", "last_event": "None", "borrower_name": "", "borrower_email": ""},
-  {"id": "VR-006", "model": "Apple Vision Pro", "status": "Available", "last_event": "None", "borrower_name": "", "borrower_email": ""}
+  {
+    "id": "VR-001",
+    "model": "Meta Quest 3",
+    "status": "Available",
+    "last_event": "None",
+    "borrower_name": "",
+    "borrower_email": ""
+  },
+  {
+    "id": "VR-002",
+    "model": "Meta Quest 3",
+    "status": "Available",
+    "last_event": "None",
+    "borrower_name": "",
+    "borrower_email": ""
+  },
+  {
+    "id": "VR-003",
+    "model": "Meta Quest 3",
+    "status": "Available",
+    "last_event": "None",
+    "borrower_name": "",
+    "borrower_email": ""
+  },
+  {
+    "id": "VR-004",
+    "model": "Meta Quest 3",
+    "status": "Available",
+    "last_event": "None",
+    "borrower_name": "",
+    "borrower_email": ""
+  },
+  {
+    "id": "VR-005",
+    "model": "Meta Quest 3",
+    "status": "Available",
+    "last_event": "None",
+    "borrower_name": "",
+    "borrower_email": ""
+  },
+  {
+    "id": "VR-006",
+    "model": "Apple Vision Pro",
+    "status": "Not Available",
+    "last_event": "NA (2026-03-01 to 2026-03-04)",
+    "borrower_name": "Rx",
+    "borrower_email": "rupesh@duck.com",
+    "event_name": "NA",
+    "start_date": "2026-03-01",
+    "end_date": "2026-03-04"
+  }
 ]
