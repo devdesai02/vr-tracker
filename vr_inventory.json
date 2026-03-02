@@ -26,10 +26,13 @@
   {
     "id": "VR-004",
     "model": "Meta Quest 3",
-    "status": "Available",
-    "last_event": "None",
-    "borrower_name": "",
-    "borrower_email": ""
+    "status": "Not Available",
+    "last_event": "Vv (2026-03-01 to 2026-03-07)",
+    "borrower_name": "T",
+    "borrower_email": "fg",
+    "event_name": "Vv",
+    "start_date": "2026-03-01",
+    "end_date": "2026-03-07"
   },
   {
     "id": "VR-005",
