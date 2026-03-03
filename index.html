@@ -69,6 +69,7 @@
                     ` : `
                         <button class="btn-submit" onclick="submitReturn(${index}, '${item.id}', '${item.model}')">Return Device</button>
                         <div id="return-${index}" class="form-group" style="display:block">
+                            <input type="email" id="email-ret-${index}" placeholder="Your Email (for threading)">
                             <input type="file" id="photo-${index}" accept="image/*">
                         </div>
                     `)}
@@ -93,8 +94,10 @@
             } catch (e) { alert("Error."); }
         }
         async function submitReturn(index, deviceId, model) {
+            const email = document.getElementById(`email-ret-${index}`).value;
             const fileInput = document.getElementById(`photo-${index}`);
             const photoFile = fileInput.files[0];
+            if (!email) { alert("Enter email for threading"); return; }
             if (!photoFile) { alert("Upload photo to initiate return"); return; }
             
             const reader = new FileReader();
@@ -112,6 +115,7 @@
                             type: 'return', 
                             deviceId, 
                             model, 
+                            email,
                             photo: base64, 
                             mimeType: mimeType,
                             fileName: fileName,
