@@ -24,13 +24,13 @@
   {
     "id": "VR-003",
     "model": "Meta Quest 3",
-    "status": "Available",
-    "last_event": "None",
-    "borrower_name": "",
-    "borrower_email": "",
-    "event_name": "",
-    "start_date": "",
-    "end_date": ""
+    "status": "Not Available",
+    "last_event": "SDSD (2026-03-11 to 2026-03-13)",
+    "borrower_name": "DDD",
+    "borrower_email": "desaidev0204@gmail.com",
+    "event_name": "SDSD",
+    "start_date": "2026-03-11",
+    "end_date": "2026-03-13"
   },
   {
     "id": "VR-004",
@@ -46,13 +46,13 @@
   {
     "id": "VR-005",
     "model": "Meta Quest 3",
-    "status": "Available",
-    "last_event": "None",
-    "borrower_name": "",
-    "borrower_email": "",
-    "event_name": "",
-    "start_date": "",
-    "end_date": ""
+    "status": "Not Available",
+    "last_event": "GHRGH (2026-03-12 to 2026-03-15)",
+    "borrower_name": "dev",
+    "borrower_email": "desaidev0204@gmail.com",
+    "event_name": "GHRGH",
+    "start_date": "2026-03-12",
+    "end_date": "2026-03-15"
   },
   {
     "id": "VR-006",
