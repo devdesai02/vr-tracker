@@ -13,13 +13,13 @@
   {
     "id": "VR-002",
     "model": "Meta Quest 3",
-    "status": "Available",
-    "last_event": "None",
-    "borrower_name": "",
-    "borrower_email": "",
-    "event_name": "",
-    "start_date": "",
-    "end_date": ""
+    "status": "Not Available",
+    "last_event": "STR (2026-03-13 to 2026-03-16)",
+    "borrower_name": "Dev Desai",
+    "borrower_email": "desaidev0204@gmail.com",
+    "event_name": "STR",
+    "start_date": "2026-03-13",
+    "end_date": "2026-03-16"
   },
   {
     "id": "VR-003",
