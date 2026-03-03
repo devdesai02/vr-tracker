@@ -1,6 +1,7 @@
 import json
 import sys
 import os
+from datetime import datetime
 
 def update_vr(device_id, person, event, location):
     inventory_file = os.path.expanduser("~/vr_management/vr_inventory.json")
@@ -10,10 +11,17 @@ def update_vr(device_id, person, event, location):
             data = json.load(f)
         
         found = False
+        current_date_str = datetime.now().strftime("%Y-%m-%d")
+        
         for item in data:
             if item.get('id') == device_id:
                 item['status'] = 'Not Available'
                 item['last_event'] = f"{event} @ {location} (By: {person})"
+                item['borrower_name'] = person
+                item['borrower_email'] = "Manual Update"
+                item['event_name'] = event
+                item['start_date'] = current_date_str
+                item['end_date'] = "N/A"
                 found = True
                 break
         
@@ -29,7 +37,7 @@ def update_vr(device_id, person, event, location):
         # Sync to GitHub
         os.chdir(os.path.expanduser("~/vr_management"))
         os.system('git add vr_inventory.json')
-        os.system(f'git commit -m "Checkout: {device_id} for {event}"')
+        os.system(f'git commit -m "Manual Checkout: {device_id} for {event}"')
         os.system('git push origin main')
         print("Done! Website will update in 30 seconds.")
 
